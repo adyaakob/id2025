@@ -1,0 +1,34 @@
+{
+    "contact": {
+        "phone": "Support phone number",
+        "email": "Support email",
+        "hours": "Support hours",
+        "locations": [
+            "Support location 1",
+            "Support location 2"
+        ]
+    },
+    "resources": {
+        "manual": "User manual link",
+        "faq": "FAQ page link",
+        "videos": "Tutorial videos link",
+        "downloads": [
+            {
+                "name": "Resource 1",
+                "link": "Download link 1"
+            },
+            {
+                "name": "Resource 2",
+                "link": "Download link 2"
+            }
+        ]
+    },
+    "warranty": {
+        "duration": "Warranty period",
+        "coverage": "What's covered",
+        "terms": [
+            "Term 1",
+            "Term 2"
+        ]
+    }
+}

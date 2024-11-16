@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;        /* #FFFFFF */
+    --foreground: 220 13% 18%;      /* #1E1E1E */
+    
+    --card: 0 0% 98%;              /* #FAFAFA */
+    --card-foreground: 220 13% 18%;
+    
+    --popover: 0 0% 98%;
+    --popover-foreground: 220 13% 18%;
+    
+    --primary: 212 100% 47%;       /* #0066CC */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 13% 91%;      /* #E8E8E8 */
+    --secondary-foreground: 220 13% 18%;
+    
+    --muted: 220 13% 91%;
+    --muted-foreground: 220 13% 40%;
+    
+    --accent: 95 100% 48%;         /* #4CAF50 */
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;      /* #DC3545 */
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 212 100% 47%;
+    
+    --radius: 1rem;                /* Increased border radius */
+  }
+ 
+  .dark {
+    --background: 220 13% 18%;      /* #1E1E1E */
+    --foreground: 0 0% 86%;         /* #DBDBDB */
+    
+    --card: 225 6% 13%;             /* #1F2428 */
+    --card-foreground: 0 0% 86%;
+    
+    --popover: 225 6% 13%;
+    --popover-foreground: 0 0% 86%;
+    
+    --primary: 212 100% 67%;        /* #569CD6 */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 13% 23%;       /* #252526 */
+    --secondary-foreground: 0 0% 86%;
+    
+    --muted: 220 13% 23%;
+    --muted-foreground: 220 13% 65%;
+    
+    --accent: 95 100% 68%;          /* #6A9955 */
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 90% 60%;       /* #F44747 */
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 220 13% 23%;
+    --input: 220 13% 23%;
+    --ring: 212 100% 67%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom styles for Product Assistant */
+.product-assistant-container {
+  @apply rounded-2xl overflow-hidden shadow-lg border border-border/50;
+  backdrop-filter: blur(8px);
+}
+
+.product-assistant-header {
+  @apply p-4 bg-gradient-to-r from-secondary to-secondary/90 border-b border-border/50;
+}
+
+.product-assistant-content {
+  @apply bg-card/95;
+}
+
+.product-assistant-input {
+  @apply rounded-xl border-border/30 focus:border-primary/50 focus:ring-primary/20;
+}
+
+.chat-message {
+  @apply rounded-2xl px-4 py-2 max-w-[85%] shadow-sm;
+}
+
+.chat-message-user {
+  @apply bg-primary/20 text-primary-foreground ml-auto;
+}
+
+.chat-message-assistant {
+  @apply bg-secondary text-secondary-foreground;
+}

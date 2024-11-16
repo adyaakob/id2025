@@ -1,0 +1,24 @@
+{
+    "dimensions": {
+        "width": "Value in units",
+        "height": "Value in units",
+        "depth": "Value in units"
+    },
+    "weight": "Product Weight",
+    "power": {
+        "voltage": "Voltage requirement",
+        "consumption": "Power consumption"
+    },
+    "connectivity": [
+        "Connection Type 1",
+        "Connection Type 2"
+    ],
+    "compatibility": [
+        "Compatible System 1",
+        "Compatible System 2"
+    ],
+    "certifications": [
+        "Certification 1",
+        "Certification 2"
+    ]
+}

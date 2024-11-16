@@ -1,0 +1,38 @@
+{
+    "common_issues": [
+        {
+            "problem": "Issue description 1",
+            "symptoms": [
+                "Symptom 1",
+                "Symptom 2"
+            ],
+            "solution": [
+                "Step 1",
+                "Step 2"
+            ],
+            "prevention": "How to prevent this issue"
+        },
+        {
+            "problem": "Issue description 2",
+            "symptoms": [
+                "Symptom 1",
+                "Symptom 2"
+            ],
+            "solution": [
+                "Step 1",
+                "Step 2"
+            ],
+            "prevention": "How to prevent this issue"
+        }
+    ],
+    "faq": [
+        {
+            "question": "Frequently asked question 1?",
+            "answer": "Detailed answer 1"
+        },
+        {
+            "question": "Frequently asked question 2?",
+            "answer": "Detailed answer 2"
+        }
+    ]
+}

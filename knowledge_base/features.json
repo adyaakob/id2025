@@ -1,0 +1,26 @@
+{
+    "feature1": {
+        "name": "Feature Name 1",
+        "description": "Detailed description of feature 1",
+        "benefits": [
+            "Benefit 1",
+            "Benefit 2"
+        ],
+        "use_cases": [
+            "Use case 1",
+            "Use case 2"
+        ]
+    },
+    "feature2": {
+        "name": "Feature Name 2",
+        "description": "Detailed description of feature 2",
+        "benefits": [
+            "Benefit 1",
+            "Benefit 2"
+        ],
+        "use_cases": [
+            "Use case 1",
+            "Use case 2"
+        ]
+    }
+}
