@@ -11,7 +11,7 @@ import { Radio, Shield, Network, Settings2, Antenna, Milestone,
          Briefcase, Phone, Mail, PhoneCall, Navigation, Router } from 'lucide-react'
 import NextImage from 'next/image'
 import Link from 'next/link'
-import Slideshow from "@/components/slideshow"
+import Slideshow from "@/components/Slideshow"
 
 export default function Component() {
   const [isPlaying, setIsPlaying] = useState(false)
