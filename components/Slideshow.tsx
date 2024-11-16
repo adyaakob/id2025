@@ -16,9 +16,10 @@ const Slideshow = () => {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
 
+    const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : '';
     const slides = [
-        '/images/slide1.jpg',
-        '/images/slide2.jpg'
+        `${basePath}/images/slide1.jpg`,
+        `${basePath}/images/slide2.jpg`
     ];
 
     // Update container size when it changes

@@ -18,6 +18,7 @@ export default function Component() {
   const [currentTime, setCurrentTime] = useState(0)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const totalDuration = 3120 // 52:00 in seconds
+  const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : ''
 
   useEffect(() => {
     // Check system preference on mount
@@ -181,7 +182,7 @@ export default function Component() {
         <Card className="p-2 w-1/5">
           <div className="flex justify-center items-center h-full">
             <NextImage
-              src="/images/teqarmada-logo.png"
+              src={`${basePath}/images/teqarmada-logo.png`}
               alt="Teq Armada Logo"
               width={150}
               height={75}
