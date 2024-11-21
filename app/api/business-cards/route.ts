@@ -3,9 +3,6 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
-
 interface BusinessCard {
   id: string;
   processedDate: string;
@@ -109,8 +106,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to save business card', 
-        details: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString()
+        details: error instanceof Error ? error.message : String(error)
       },
       { status: 500 }
     );
