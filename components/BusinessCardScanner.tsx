@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import BusinessCardList from './BusinessCardList';
 import { createWorker } from 'tesseract.js';
+import { storage } from '@/lib/storage';
 
 interface BusinessCard {
   name: string;
@@ -26,11 +27,29 @@ export default function BusinessCardScanner() {
   const workerRef = useRef<any>(null);
 
   const initializeWorker = async () => {
-    if (!workerRef.current) {
-      workerRef.current = await createWorker('eng');
+    console.log('⚙️ Initializing Tesseract worker...');
+    try {
+      if (!workerRef.current) {
+        workerRef.current = await createWorker();
+        await workerRef.current.loadLanguage('eng');
+        await workerRef.current.initialize('eng');
+        console.log('✅ Tesseract worker initialized successfully');
+      }
+      return workerRef.current;
+    } catch (error) {
+      console.error('❌ Failed to initialize Tesseract worker:', error);
+      throw new Error('Failed to initialize text recognition');
     }
-    return workerRef.current;
   };
+
+  // Clean up worker on unmount
+  useEffect(() => {
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
+    };
+  }, []);
 
   const startCamera = async () => {
     try {
@@ -133,20 +152,23 @@ export default function BusinessCardScanner() {
   const performOCR = async (imageData: string | Blob) => {
     console.log('🔍 Starting OCR process...');
     try {
-      console.log('⚙️ Initializing Tesseract worker...');
       const worker = await initializeWorker();
       
       console.log('📸 Starting image recognition...');
       const result = await worker.recognize(imageData);
-      console.log('✅ OCR completed, text extracted:', result.data.text.substring(0, 100) + '...');
       
+      if (!result?.data?.text) {
+        throw new Error('No text found in image');
+      }
+      
+      console.log('✅ OCR completed, text extracted:', result.data.text.substring(0, 100) + '...');
       const processedCard = processText(result.data.text);
       console.log('📋 Processed card data:', processedCard);
       
       return processedCard;
     } catch (error) {
       console.error('❌ OCR Error:', error);
-      throw new Error('Failed to process image text');
+      throw error instanceof Error ? error : new Error('Failed to process image text');
     }
   };
 
@@ -163,8 +185,12 @@ export default function BusinessCardScanner() {
 
     setProcessing(true);
     setProcessingError(null);
+    setProcessingSuccess(false);
 
     try {
+      // Initialize worker first
+      await initializeWorker();
+      
       console.log('🔄 Beginning OCR processing...');
       const card = await performOCR(file);
       
@@ -179,7 +205,9 @@ export default function BusinessCardScanner() {
       console.error('❌ File processing error:', error);
       setProcessingError(error instanceof Error ? error.message : 'Failed to process image');
     } finally {
-      console.log('🏁 Finishing file upload process, setting processing to false');
+      if (event.target) {
+        event.target.value = ''; // Reset file input
+      }
       setProcessing(false);
     }
   };
@@ -239,52 +267,37 @@ export default function BusinessCardScanner() {
 
   const handleProcessCard = async () => {
     if (!scannedData || processing) {
-      console.log('⚠️ Process card canceled:', { hasScannedData: !!scannedData, isProcessing: processing });
       return;
     }
 
-    // Validate scanned data
-    if (!scannedData.name && !scannedData.email && !scannedData.phone) {
-      setProcessingError('No valid business card data detected. Please try scanning again.');
-      return;
-    }
-
-    console.log('📤 Starting card processing...');
+    console.log('🔄 Starting card processing...');
     setProcessing(true);
     setProcessingError(null);
+    setProcessingSuccess(false);
 
     try {
-      console.log('🔄 Sending card data to server:', scannedData);
-      const response = await fetch('/api/business-cards', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(scannedData)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server error response:', errorText);
-        try {
-          const errorData = JSON.parse(errorText);
-          throw new Error(errorData.error || `Server error: ${response.status} ${response.statusText}`);
-        } catch (parseError) {
-          console.error('Error parsing error response:', parseError);
-          throw new Error(`Server error: ${response.status} ${response.statusText}`);
-        }
+      // Validate scanned data
+      if (!scannedData.name && !scannedData.email && !scannedData.phone) {
+        throw new Error('No valid business card data detected');
       }
 
-      const responseData = await response.json();
-      console.log('📥 Server response:', responseData);
-
-      console.log('✅ Card processed successfully');
+      // Save directly to localStorage without any API calls
+      console.log('💾 Saving card to localStorage...');
+      const savedCard = await storage.saveCard({
+        ...scannedData,
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        processedDate: new Date().toISOString()
+      });
+      
+      console.log('✅ Card saved successfully:', savedCard);
       setProcessingSuccess(true);
       
-      // Reset after success
+      // Reset states after delay
       setTimeout(() => {
-        resetStates();
+        setScannedData(null);
+        setProcessing(false);
+        setProcessingError(null);
+        setProcessingSuccess(false);
       }, 2000);
     } catch (error) {
       console.error('❌ Card processing error:', error);
@@ -297,13 +310,9 @@ export default function BusinessCardScanner() {
 
   const resetStates = () => {
     setScannedData(null);
-    setProcessingError(null);
     setProcessing(false);
+    setProcessingError(null);
     setProcessingSuccess(false);
-    if (workerRef.current) {
-      workerRef.current.terminate();
-      workerRef.current = null;
-    }
   };
 
   useEffect(() => {

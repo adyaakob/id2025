@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { List, X, User, Building, Mail, Phone, Tag, RefreshCw } from 'lucide-react';
+import { storage } from '@/lib/storage';
 
 interface BusinessCard {
   id: string;
@@ -23,20 +24,10 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setError(null);
     try {
-      console.log('Fetching business cards...');
-      const response = await fetch('/api/business-cards');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Received cards:', data);
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      setCards(data.cards || []);
+      const cards = await storage.getCards();
+      setCards(cards);
     } catch (error) {
-      console.error('Error fetching business cards:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load business cards');
+      setError('Failed to load business cards');
     } finally {
       setLoading(false);
     }

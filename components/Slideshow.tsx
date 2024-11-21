@@ -7,6 +7,7 @@ import {
     Maximize, Minimize, Settings, Square 
 } from 'lucide-react';
 import { AudioControls } from './AudioControls';
+import { getAssetPath } from '@/lib/utils';
 
 export const sections = [
     { name: 'overview', slides: 9 },
@@ -51,8 +52,7 @@ const Slideshow = ({ onSectionChange, initialSection = 0 }: SlideshowProps) => {
 
     const getCurrentSlidePath = () => {
         const section = sections[currentSection];
-        const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : '';
-        return `${basePath}/slides/${section.name}/slide${currentSlideInSection + 1}.jpg`;
+        return getAssetPath(`slides/${section.name}/slide${currentSlideInSection + 1}.jpg`);
     };
 
     const clearSlideTimer = () => {

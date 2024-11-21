@@ -1,0 +1,8 @@
+{
+    "codeium.enableCodeLens": true,
+    "codeium.enableConfig": {
+        "mode": "cascade",
+        "enableAutoCompletion": true,
+        "enableInlineCompletion": true
+    }
+}

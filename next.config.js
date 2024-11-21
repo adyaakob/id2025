@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  output: 'export',  // Always use static export
   basePath: process.env.NODE_ENV === 'production' ? '/id2025' : '',
   assetPrefix: process.env.NODE_ENV === 'production' ? '/id2025/' : '',
   images: {
@@ -13,6 +13,18 @@ const nextConfig = {
     // your project has type errors.
     // !! WARN !!
     ignoreBuildErrors: true,
+  },
+  // Disable server API routes in production
+  rewrites: async () => {
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/api/:path*',
+          destination: '/api/:path*',
+        },
+      ];
+    }
+    return [];
   },
 }
 

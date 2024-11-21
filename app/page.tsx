@@ -16,6 +16,7 @@ import BusinessCardScanner from "@/components/BusinessCardScanner"
 import AIAssistant from '@/components/AIAssistant'
 import { useTheme } from 'next-themes'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { getAssetPath } from '@/lib/utils';
 
 export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -127,7 +128,7 @@ export default function Home() {
         <Card className="p-2 w-1/5">
           <div className="flex justify-center items-center h-full">
             <NextImage
-              src="/images/teqarmada-logo.png"
+              src={getAssetPath('images/teqarmada-logo.png')}
               alt="Teq Armada Logo"
               width={150}
               height={75}

@@ -49,6 +49,16 @@
       "type": "customer",
       "id": "6fd53abd-1a99-4811-a722-9d6e5ae2e64e",
       "processedDate": "2024-11-20T14:48:25.815Z"
+    },
+    {
+      "name": "Mariana Anderson",
+      "title": "Marketing Manager y 4",
+      "company": "°",
+      "email": "hello@reallygreatsite.com L",
+      "phone": "+123-456-7890",
+      "type": "customer",
+      "id": "842aba5a-3c59-47ba-bbda-225be8d69916",
+      "processedDate": "2024-11-21T07:21:03.908Z"
     }
   ]
 }

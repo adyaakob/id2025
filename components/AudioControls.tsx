@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { getAssetPath } from '@/lib/utils';
 
 type Language = 'en' | 'id' | 'ms';
 
@@ -29,8 +30,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
 
   useEffect(() => {
     if (audioRef.current) {
-      const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : '';
-      const audioPath = `${basePath}/audio/${currentSection}/slide${currentSlide + 1}_${currentLanguage}.mp3`;
+      const audioPath = getAssetPath(`audio/${currentSection}/slide${currentSlide + 1}_${currentLanguage}.mp3`);
       audioRef.current.src = audioPath;
       audioRef.current.load();
       
