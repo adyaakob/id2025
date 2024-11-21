@@ -1,6 +1,6 @@
-const fs = require('fs');
-const pathModule = require('path');
-const pdfParse = require('pdf-parse');
+import * as fs from 'fs';
+import * as pathModule from 'path';
+import pdfParse from 'pdf-parse';
 
 interface ProcessedPDF {
     title: string;
@@ -117,7 +117,7 @@ async function savePDFContent(pdfPath: string, outputPath: string): Promise<PDFC
     }
 }
 
-module.exports = {
-    processPDF: processPDFContent,
+export {
+    processPDFContent as processPDF,
     savePDFContent
 };
