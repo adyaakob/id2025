@@ -1,0 +1,12 @@
+{
+  "dimensions": {
+    "width": "440 mm",
+    "height": "88 mm (2U)",
+    "depth": "280 mm"
+  },
+  "weight": "4.5 kg",
+  "power": {
+    "voltage": "100-240V AC",
+    "consumption": "40W typical"
+  }
+} 

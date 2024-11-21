@@ -4,223 +4,225 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { 
     Play, Pause, ChevronLeft, ChevronRight, 
-    Volume2, VolumeX, Maximize, Minimize, Settings 
+    Maximize, Minimize, Settings, Square 
 } from 'lucide-react';
+import { AudioControls } from './AudioControls';
 
-const Slideshow = () => {
+export const sections = [
+    { name: 'overview', slides: 9 },
+    { name: 'features', slides: 3 },
+    { name: 'specifications', slides: 3 },
+    { name: 'audio', slides: 3 },
+    { name: 'standards', slides: 3 },
+    { name: 'protocols', slides: 3 },
+    { name: 'deployment', slides: 3 },
+    { name: 'vehicle_ship', slides: 3 },
+    { name: 'land_based', slides: 3 },
+    { name: 'mechanical', slides: 3 }
+];
+
+interface SlideshowProps {
+    onSectionChange?: (section: number) => void;
+    initialSection?: number;
+}
+
+const Slideshow = ({ onSectionChange, initialSection = 0 }: SlideshowProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(true);
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentSection, setCurrentSection] = useState(initialSection);  
+    const [currentSlideInSection, setCurrentSlideInSection] = useState(0);
     const [isMuted, setIsMuted] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
+    const [waitingForAudio, setWaitingForAudio] = useState(false);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : '';
-    const slides = [
-        `${basePath}/images/slide1.jpg`,
-        `${basePath}/images/slide2.jpg`
-    ];
-
-    // Update container size when it changes
     useEffect(() => {
-        const updateContainerSize = () => {
-            if (containerRef.current) {
-                const { width, height } = containerRef.current.getBoundingClientRect();
-                setContainerSize({ width, height });
-            }
-        };
+        setIsPlaying(false);
+        setCurrentSection(0); 
+        setCurrentSlideInSection(0); 
+    }, []);
 
-        // Initial measurement
-        updateContainerSize();
+    useEffect(() => {
+        setCurrentSection(initialSection);
+        setCurrentSlideInSection(0);
+    }, [initialSection]);
 
-        // Measure on window resize
-        window.addEventListener('resize', updateContainerSize);
-        
-        // Measure on container size change
-        const resizeObserver = new ResizeObserver(updateContainerSize);
-        if (containerRef.current) {
-            resizeObserver.observe(containerRef.current);
+    const getCurrentSlidePath = () => {
+        const section = sections[currentSection];
+        return `/slides/${section.name}/slide${currentSlideInSection + 1}.jpg`;
+    };
+
+    const clearSlideTimer = () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
         }
+    };
 
+    const startSlideTimer = () => {
+        clearSlideTimer();
+        timerRef.current = setInterval(() => {
+            if (isPlaying) {
+                handleNextSlide();
+            }
+        }, 3000);
+    };
+
+    const handlePlay = () => {
+        setIsPlaying(true);
+        if (audioRef.current) {
+            audioRef.current.play().catch(console.error);
+        }
+        startSlideTimer();
+    };
+
+    const handlePause = () => {
+        setIsPlaying(false);
+        clearSlideTimer();
+        if (audioRef.current) {
+            audioRef.current.pause();
+        }
+    };
+
+    const handleStop = () => {
+        setIsPlaying(false);
+        clearSlideTimer();
+        setCurrentSection(0);
+        setCurrentSlideInSection(0);
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+        if (onSectionChange) {
+            onSectionChange(0);
+        }
+    };
+
+    const handleNextSlide = () => {
+        if (currentSlideInSection < sections[currentSection].slides - 1) {
+            setCurrentSlideInSection(prev => prev + 1);
+        } else if (currentSection < sections.length - 1) {
+            const nextSection = currentSection + 1;
+            setCurrentSection(nextSection);
+            setCurrentSlideInSection(0);
+            if (onSectionChange) {
+                onSectionChange(nextSection);
+            }
+        } else {
+            handleStop(); 
+        }
+    };
+
+    const handlePrevSlide = () => {
+        if (currentSlideInSection > 0) {
+            setCurrentSlideInSection(prev => prev - 1);
+        } else if (currentSection > 0) {
+            const prevSection = currentSection - 1;
+            setCurrentSection(prevSection);
+            setCurrentSlideInSection(sections[prevSection].slides - 1);
+            if (onSectionChange) {
+                onSectionChange(prevSection);
+            }
+        }
+    };
+
+    const handlePlayPause = () => {
+        if (isPlaying) {
+            handlePause();
+        } else {
+            handlePlay();
+        }
+    };
+
+    useEffect(() => {
         return () => {
-            window.removeEventListener('resize', updateContainerSize);
-            resizeObserver.disconnect();
+            clearSlideTimer();
         };
     }, []);
 
-    const nextSlide = useCallback(() => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, [slides.length]);
+    useEffect(() => {
+        const updateSize = () => {
+            if (containerRef.current) {
+                setContainerSize({
+                    width: containerRef.current.offsetWidth,
+                    height: containerRef.current.offsetHeight
+                });
+            }
+        };
 
-    const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    };
+        window.addEventListener('resize', updateSize);
+        updateSize();
+        return () => window.removeEventListener('resize', updateSize);
+    }, []);
 
-    const togglePlayPause = () => {
-        setIsPlaying((prev) => !prev);
-    };
-
-    const toggleMute = () => {
-        setIsMuted((prev) => !prev);
-    };
-
-    const toggleFullscreen = async () => {
+    const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
-            await containerRef.current?.requestFullscreen();
+            containerRef.current?.requestFullscreen();
             setIsFullscreen(true);
         } else {
-            await document.exitFullscreen();
+            document.exitFullscreen();
             setIsFullscreen(false);
         }
     };
 
-    const toggleSettings = () => {
-        setShowSettings((prev) => !prev);
-    };
-
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (isPlaying) {
-            interval = setInterval(nextSlide, 3000);
-        }
-        return () => {
-            if (interval) {
-                clearInterval(interval);
-            }
-        };
-    }, [isPlaying, nextSlide]);
-
     return (
-        <div 
-            ref={containerRef} 
-            style={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                backgroundColor: 'rgb(31, 41, 55)',
-                overflow: 'hidden'
-            }}
-        >
-            {slides.map((slide, index) => (
-                <div
-                    key={slide}
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                        index === currentSlide ? 'opacity-100' : 'opacity-0'
-                    }`}
-                >
-                    <Image
-                        src={slide}
-                        alt={`Slide ${index + 1}`}
-                        fill
-                        sizes="(max-width: 1920px) 100vw, 1920px"
-                        quality={100}
-                        priority={index === 0}
-                        style={{ 
-                            objectFit: 'contain',
-                            objectPosition: 'center',
-                            border: 'none',
-                            outline: 'none'
-                        }}
-                    />
-                </div>
-            ))}
-            
-            {/* Progress Bar */}
-            <div className="progress-bar">
-                <div 
-                    className="progress-bar-fill"
-                    style={{ 
-                        width: `${((currentSlide + 1) / slides.length) * 100}%`
-                    }}
-                />
-            </div>
-
-            {/* Control Bar */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 flex justify-between items-center">
-                {/* Left Controls */}
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={togglePlayPause}
-                        className="w-10 h-10 rounded-full bg-white/30 hover:bg-white/50 text-white flex items-center justify-center transition-colors"
-                        title={isPlaying ? 'Pause' : 'Play'}
-                    >
-                        {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                    </button>
-                    <button
-                        onClick={toggleMute}
-                        className="w-10 h-10 rounded-full bg-white/30 hover:bg-white/50 text-white flex items-center justify-center transition-colors"
-                        title={isMuted ? 'Unmute' : 'Mute'}
-                    >
-                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                    </button>
-                    <span className="text-white text-sm">
-                        {`${currentSlide + 1} / ${slides.length}`}
-                    </span>
-                </div>
-
-                {/* Center Controls */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 flex gap-2">
-                    <button
-                        onClick={prevSlide}
-                        className="w-10 h-10 rounded-full bg-white/30 hover:bg-white/50 text-white flex items-center justify-center transition-colors"
-                        title="Previous"
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <button
-                        onClick={nextSlide}
-                        className="w-10 h-10 rounded-full bg-white/30 hover:bg-white/50 text-white flex items-center justify-center transition-colors"
-                        title="Next"
-                    >
-                        <ChevronRight size={20} />
-                    </button>
-                </div>
-
-                {/* Right Controls */}
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={toggleSettings}
-                        className="w-10 h-10 rounded-full bg-white/30 hover:bg-white/50 text-white flex items-center justify-center transition-colors"
-                        title="Settings"
-                    >
-                        <Settings size={20} />
-                    </button>
-                    <button
-                        onClick={toggleFullscreen}
-                        className="w-10 h-10 rounded-full bg-white/30 hover:bg-white/50 text-white flex items-center justify-center transition-colors"
-                        title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-                    >
-                        {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-                    </button>
-                </div>
-            </div>
-
-            {/* Settings Menu */}
-            {showSettings && (
-                <div className="absolute bottom-20 right-4 bg-black/90 text-white p-4 rounded-lg">
-                    <div className="text-sm space-y-2">
-                        <div className="flex items-center justify-between gap-4">
-                            <span>Autoplay</span>
-                            <button
-                                onClick={togglePlayPause}
-                                className="px-2 py-1 rounded bg-white/20 hover:bg-white/30"
-                            >
-                                {isPlaying ? 'On' : 'Off'}
-                            </button>
-                        </div>
-                        <div className="flex items-center justify-between gap-4">
-                            <span>Sound</span>
-                            <button
-                                onClick={toggleMute}
-                                className="px-2 py-1 rounded bg-white/20 hover:bg-white/30"
-                            >
-                                {isMuted ? 'Off' : 'On'}
-                            </button>
-                        </div>
+        <div ref={containerRef} className="relative w-full h-full bg-black">
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-full h-0 pb-[56.25%]">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <Image
+                            src={`/slides/${sections[currentSection].name}/slide${currentSlideInSection + 1}.jpg`}
+                            alt={`Slide ${currentSlideInSection + 1}`}
+                            fill
+                            className="object-contain"
+                            sizes="100vw"
+                            priority
+                        />
                     </div>
                 </div>
-            )}
+            </div>
+
+            {/* Controls */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-black bg-opacity-50 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <button onClick={handlePlayPause} className="text-white hover:text-gray-300">
+                        {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                    </button>
+                    <button onClick={handleStop} className="text-white hover:text-gray-300">
+                        <Square size={24} />
+                    </button>
+                    <button onClick={handlePrevSlide} className="text-white hover:text-gray-300">
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button onClick={handleNextSlide} className="text-white hover:text-gray-300">
+                        <ChevronRight size={24} />
+                    </button>
+                    <span className="text-white">
+                        {sections[currentSection].name} - {currentSlideInSection + 1}/{sections[currentSection].slides}
+                    </span>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                    <AudioControls
+                        currentSection={sections[currentSection].name}
+                        currentSlide={currentSlideInSection}
+                        isMuted={isMuted}
+                        onMuteToggle={setIsMuted}
+                        onAudioComplete={() => {
+                            if (isPlaying) {
+                                handleNextSlide();
+                            }
+                        }}
+                        audioRef={audioRef}
+                        isPlaying={isPlaying}
+                    />
+                    <button onClick={toggleFullscreen} className="text-white hover:text-gray-300">
+                        {isFullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

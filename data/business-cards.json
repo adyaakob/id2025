@@ -1,0 +1,54 @@
+{
+  "cards": [
+    {
+      "name": "Mariana Anderson",
+      "title": "Marketing Manager y 4",
+      "company": "°",
+      "email": "hello@reallygreatsite.com L",
+      "phone": "+123-456-7890",
+      "type": "customer",
+      "id": "885a997f-b8a1-41a0-98e4-1a6219bb5124",
+      "processedDate": "2024-11-20T14:45:21.470Z"
+    },
+    {
+      "name": "JANESSA BUGHATTI",
+      "title": "12 3rd St.,",
+      "company": "Boston, MA 54321",
+      "email": "janessa@example.com",
+      "phone": "(805) 555-0123",
+      "type": "customer",
+      "id": "2b69f41f-19a3-455b-9016-a1e0e35c86a7",
+      "processedDate": "2024-11-20T14:45:39.269Z"
+    },
+    {
+      "name": "Mariana Anderson",
+      "title": "Marketing Manager y 4",
+      "company": "°",
+      "email": "hello@reallygreatsite.com L",
+      "phone": "+123-456-7890",
+      "type": "customer",
+      "id": "b5f4310e-744a-4fbe-bfba-fce0c41f4ffc",
+      "processedDate": "2024-11-20T14:48:07.996Z"
+    },
+    {
+      "name": "JANESSA BUGHATTI",
+      "title": "12 3rd St.,",
+      "company": "Boston, MA 54321",
+      "email": "janessa@example.com",
+      "phone": "(805) 555-0123",
+      "type": "customer",
+      "id": "d0aa064b-275a-4fd0-9864-a3589a22d005",
+      "processedDate": "2024-11-20T14:48:17.390Z"
+    },
+    {
+      "name": "|",
+      "title": "[\\ (‘",
+      "company": "0) GRAPHIC DESIGNER 3",
+      "email": "urname@email.com I",
+      "phone": "",
+      "type": "customer",
+      "id": "6fd53abd-1a99-4811-a722-9d6e5ae2e64e",
+      "processedDate": "2024-11-20T14:48:25.815Z"
+    }
+  ]
+}

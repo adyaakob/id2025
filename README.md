@@ -38,6 +38,44 @@ An interactive web application designed for product exhibitions, featuring a sli
    - Open http://localhost:3000 in your web browser
    - Press F11 for fullscreen mode
 
+## LLM Integration Setup
+
+You have two options for AI integration:
+
+### Option 1: Local Ollama (Default)
+The AI assistant uses Ollama to run an open-source LLM locally. Follow these steps:
+
+1. Install Ollama from https://ollama.ai/
+
+2. Pull the Llama 2 model:
+```bash
+ollama pull llama2
+```
+3. Start the Ollama server:
+```bash
+ollama serve
+```
+
+### Option 2: Hugging Face Transformers
+Alternatively, you can use Hugging Face's Transformers library for more model options:
+
+1. Install the required packages:
+```bash
+pip install -r requirements.txt
+```
+
+2. Run the LLM assistant:
+```bash
+python llm_assistant.py
+```
+
+The assistant uses:
+- Llama 2 (7B parameters) with 4-bit quantization for efficient memory usage
+- Automatic device placement (CPU/GPU)
+- Temperature-controlled response generation
+
+Note: Using Hugging Face models requires accepting their terms of service and may require an access token for some models.
+
 ## Development
 
 To run the application in development mode with auto-reload:

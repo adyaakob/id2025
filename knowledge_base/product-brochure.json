@@ -1,0 +1,37 @@
+{
+  "title": "product-brochure",
+  "type": "pdf",
+  "lastUpdated": "2024-11-20T15:39:11.897Z",
+  "sections": [
+    {
+      "title": "•Enables multi-network integration across HF, VHF, UHF,",
+      "content": "and P 25 radio systems",
+      "pageNumber": 1
+    },
+    {
+      "title": "VRG Vo IP Radio Gateway",
+      "content": "Seamless Integration of Legacy Radio Systems with IP Networks",
+      "pageNumber": 1
+    },
+    {
+      "title": "Product Overview",
+      "content": "The Vo IP Radio Gateway (VRG) is a military-grade communication integration solution that\nrevolutionizes tactical radio operations by seamlessly bridging legacy radio systems with modern IP\nnetworks. Locally designed and manufactured, this four-port audio gateway device enables multi-party\ncalls among HF, VHF, UHF networks and dedicated mobile communication terminals, offering an IP-\nbased platform that extends the capabilities of non-IP legacy radios.\nB 5-2 A Ostina Business Avenue, 43650 Bandar Baru Bangi, Selangor Darul Ehsan\nwww. teqarmada. com\nmixing",
+      "pageNumber": 1
+    },
+    {
+      "title": "JAZLAN BIN ABDUL JALIL",
+      "content": "Manager, Sales and Marketing",
+      "pageNumber": 1
+    },
+    {
+      "title": "+6016 693 4865 / +603 3851 3314",
+      "content": "jazlan@teqarmada. com",
+      "pageNumber": 1
+    },
+    {
+      "title": "VRG Vo IP Radio Gateway",
+      "content": "* Note on Audio Codec: Audio codecs (G. 711 A/B, Opus, and\nSpeex) ensures optimal voice quality and efficient bandwidth\nusage across different network conditions. This multi-codec\nsupport enables seamless interoperability between legacy\nradio systems and modern IP networks, allowing for clear voice",
+      "pageNumber": 1
+    }
+  ]
+}

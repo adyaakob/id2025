@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
@@ -11,17 +11,19 @@ import { Radio, Shield, Network, Settings2, Antenna, Milestone,
          Briefcase, Phone, Mail, PhoneCall, Navigation, Router } from 'lucide-react'
 import NextImage from 'next/image'
 import Link from 'next/link'
-import Slideshow from "@/components/Slideshow"
+import Slideshow, { sections } from "@/components/Slideshow"
+import BusinessCardScanner from "@/components/BusinessCardScanner"
+import AIAssistant from '@/components/AIAssistant'
 
-export default function Component() {
+export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const [currentSection, setCurrentSection] = useState(0)
   const totalDuration = 3120 // 52:00 in seconds
   const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : ''
 
   useEffect(() => {
-    // Check system preference on mount
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setIsDarkMode(true)
       document.documentElement.classList.add('dark')
@@ -29,7 +31,6 @@ export default function Component() {
   }, [])
 
   useEffect(() => {
-    // Apply dark mode class to html element
     if (isDarkMode) {
       document.documentElement.classList.add('dark')
     } else {
@@ -41,27 +42,25 @@ export default function Component() {
     setIsDarkMode(!isDarkMode)
   }
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60)
-    const seconds = Math.floor(time % 60)
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  }
-
   const navigationItems = [
-    { icon: Radio, label: 'Overview' },
-    { icon: Antenna, label: 'Features' },
-    { icon: Settings2, label: 'Specifications' },
-    { icon: Speaker, label: 'Audio' },
-    { icon: Shield, label: 'Standards' },
-    { icon: Network, label: 'Protocols' },
-    { icon: Router, label: 'Deployment' },
-    { icon: Truck, label: 'Vehicle/Ship' },
-    { icon: Building2, label: 'Land-based' },
-    { icon: Wrench, label: 'Mechanical' },
+    { icon: Radio, label: 'Overview', section: 0 },
+    { icon: Antenna, label: 'Features', section: 1 },
+    { icon: Settings2, label: 'Specifications', section: 2 },
+    { icon: Speaker, label: 'Audio', section: 3 },
+    { icon: Shield, label: 'Standards', section: 4 },
+    { icon: Network, label: 'Protocols', section: 5 },
+    { icon: Router, label: 'Deployment', section: 6 },
+    { icon: Truck, label: 'Vehicle/Ship', section: 7 },
+    { icon: Building2, label: 'Land-based', section: 8 },
+    { icon: Wrench, label: 'Mechanical', section: 9 },
   ]
 
+  const handleSectionChange = (section: number) => {
+    setCurrentSection(section);
+  }
+
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col min-h-screen">
       {/* Header */}
       <header className="bg-secondary text-secondary-foreground p-4 flex justify-between items-center">
         <div className="flex-1 flex justify-center">
@@ -80,44 +79,26 @@ export default function Component() {
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden p-4 gap-4 bg-background">
-        {/* Left Sidebar - Chat */}
-        <div className="w-80 product-assistant-container flex flex-col">
-          <div className="product-assistant-header">
-            <div className="text-sm font-medium text-secondary-foreground">AI Support Assistant</div>
-            <div className="text-xs text-muted-foreground">Military-grade Radio Communication System</div>
+        {/* Left Sidebar - AI Assistant */}
+        <div className="w-80 flex flex-col bg-card rounded-lg shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-border">
+            <h2 className="font-semibold">AI Support Assistant</h2>
+            <p className="text-xs text-muted-foreground">Military-grade Radio Communication System</p>
           </div>
-          <div className="product-assistant-content flex-1 p-4 overflow-y-auto space-y-4">
-            {/* Example chat messages */}
-            <div className="chat-message chat-message-assistant">
-              Welcome to VRG VoIP Radio Gateway! How can I assist you with our military-grade communication system?
-            </div>
-            <div className="chat-message chat-message-user">
-              Can you tell me about the main features?
-            </div>
-          </div>
-          <div className="p-4 border-t border-border/50 bg-card/95">
-            <div className="relative">
-              <Input 
-                placeholder="Ask me anything..." 
-                className="product-assistant-input pr-10 text-sm"
-              />
-              <Button 
-                size="icon"
-                variant="ghost" 
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
+          <div className="flex-1">
+            <AIAssistant />
           </div>
         </div>
 
-        {/* Main Content Area */}
+        {/* Main Content Area - Slideshow */}
         <div className="flex-1 flex flex-col bg-card rounded-lg shadow-sm overflow-hidden">
           {/* Slideshow Container */}
-          <div className="flex-1 bg-secondary flex items-center justify-center p-4">
-            <div className="w-full h-full flex items-center justify-center">
-              <Slideshow />
+          <div className="flex-1 bg-secondary">
+            <div className="w-full h-full">
+              <Slideshow 
+                initialSection={currentSection}
+                onSectionChange={handleSectionChange}
+              />
             </div>
           </div>
 
@@ -128,15 +109,19 @@ export default function Component() {
                 <Button
                   key={item.label}
                   variant="ghost"
-                  className="flex flex-col items-center gap-1.5 h-auto py-3 px-4 
+                  onClick={() => setCurrentSection(item.section)}
+                  className={`flex flex-col items-center gap-1.5 h-auto py-3 px-4 
                     bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl
                     shadow-lg hover:shadow-xl hover:scale-105 hover:bg-white/20
                     transition-all duration-300 ease-out
                     text-black min-w-[90px] transform hover:-translate-y-0.5
-                    active:translate-y-0 active:shadow-md"
+                    active:translate-y-0 active:shadow-md
+                    ${currentSection === item.section ? 'bg-white/30' : ''}`}
                 >
                   <item.icon className="h-7 w-7 text-black drop-shadow-md" />
-                  <span className="text-[14px] font-medium text-center leading-tight uppercase text-black drop-shadow-sm">{item.label}</span>
+                  <span className="text-[14px] font-medium text-center leading-tight uppercase text-black drop-shadow-sm">
+                    {item.label}
+                  </span>
                 </Button>
               ))}
             </nav>
@@ -148,41 +133,25 @@ export default function Component() {
       <div className="flex gap-2 p-2 bg-background">
         <Card className="p-2 w-1/5">
           <h3 className="font-semibold text-xs mb-1 text-foreground text-center">COMPANY INFO</h3>
-          <div className="text-xs space-y-1 text-muted-foreground text-center">
-            <p className="text-xl font-medium text-foreground mb-2">TEQ ARMADA SDN BHD</p>
-            <div className="flex flex-col items-center justify-center gap-1">
-              <p className="flex items-center justify-center gap-1">
-                <Building2 className="h-3 w-3" />
-                B5-2A Ostina Business Avenue
-              </p>
-              <p className="flex items-center justify-center gap-1">
-                <Navigation className="h-3 w-3" />
-                43650 Bandar Baru Bangi
-              </p>
-              <p className="flex items-center justify-center gap-1">
-                <Navigation className="h-3 w-3" />
-                Selangor Darul Ehsan
-              </p>
-              <p className="flex items-center justify-center gap-1">
-                <Navigation className="h-3 w-3" />
-                Malaysia
-              </p>
-            </div>
-            <Link 
-              href="http://www.teqarmada.com" 
-              target="_blank"
-              className="flex items-center justify-center gap-1 text-accent hover:underline mt-2"
-            >
-              <Globe className="h-3 w-3" />
-              www.teqarmada.com
-            </Link>
-          </div>
+          <p className="text-xs text-muted-foreground text-center">TEQ ARMADA SDN BHD</p>
+          <p className="text-xs text-muted-foreground text-center">B5-2A Ostina Business Avenue</p>
+          <p className="text-xs text-muted-foreground text-center">43650 Bandar Baru Bangi</p>
+          <p className="text-xs text-muted-foreground text-center">Selangor Darul Ehsan</p>
+          <p className="text-xs text-muted-foreground text-center">Malaysia</p>
+          <Link 
+            href="http://www.teqarmada.com" 
+            target="_blank"
+            className="flex items-center justify-center gap-1 text-accent hover:underline mt-2"
+          >
+            <Globe className="h-3 w-3" />
+            www.teqarmada.com
+          </Link>
         </Card>
 
         <Card className="p-2 w-1/5">
           <div className="flex justify-center items-center h-full">
             <NextImage
-              src={`${basePath}/images/teqarmada-logo.png`}
+              src="/images/teqarmada-logo.png"
               alt="Teq Armada Logo"
               width={150}
               height={75}
@@ -193,26 +162,26 @@ export default function Component() {
 
         <Card className="p-2 w-1/5">
           <h3 className="font-semibold text-xs mb-1 text-foreground text-center">SALES CONTACT</h3>
-          <div className="text-xs space-y-1 text-muted-foreground text-center">
-            <p className="text-xl font-medium text-foreground mb-2">JAZLAN BIN ABDUL JALIL</p>
-            <p className="flex items-center justify-center gap-1 text-blue-500">
-              <Briefcase className="h-3 w-3" />
-              Manager, Sales and Marketing
-            </p>
-            <p className="flex items-center justify-center gap-1">
-              <Phone className="h-3 w-3" />
-              +6016 693 4865
-            </p>
-            <p className="flex items-center justify-center gap-1">
-              <PhoneCall className="h-3 w-3" />
-              +603 3851 3314
-            </p>
-            <p className="flex items-center justify-center gap-1 text-accent">
-              <Mail className="h-3 w-3" />
-              jazlan@teqarmada.com
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground text-center">JAZLAN BIN ABDUL JALIL</p>
+          <p className="flex items-center justify-center gap-1 text-blue-500">
+            <Briefcase className="h-3 w-3" />
+            Manager, Sales and Marketing
+          </p>
+          <p className="flex items-center justify-center gap-1">
+            <Phone className="h-3 w-3" />
+            +6016 693 4865
+          </p>
+          <p className="flex items-center justify-center gap-1">
+            <PhoneCall className="h-3 w-3" />
+            +603 3851 3314
+          </p>
+          <p className="flex items-center justify-center gap-1 text-accent">
+            <Mail className="h-3 w-3" />
+            jazlan@teqarmada.com
+          </p>
         </Card>
+
+        <BusinessCardScanner />
 
         <Card className="p-2 flex-grow">
           <h3 className="font-semibold text-xs mb-1 text-foreground text-center">CONTACT FORM</h3>
@@ -246,5 +215,5 @@ export default function Component() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

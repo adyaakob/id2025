@@ -1,0 +1,47 @@
+[
+  {
+    "id": "vrg-overview",
+    "content": "The VoIP Radio Gateway (VRG) is a device that allows non-IP legacy radios to be integrated into and used on IP-based networks. It has four audio ports that can connect multi-party calls among HF, VHF, and UHF networks, or dedicated mobile communication terminals. The VRG has two Ethernet ports that are set up as a 2-port switch to provide network connectivity. The device is designed and produced locally, emphasizing reliability and integration capabilities.",
+    "tags": ["overview", "voip", "radio", "gateway", "ports", "ethernet"]
+  },
+  {
+    "id": "vrg-functionality",
+    "content": "The VRG enables legacy radios (HF, VHF, UHF) to function within IP-based networks by acting as a bridge between these systems. It converts analog signals from legacy radios into digital signals for IP networks and vice versa. This signal conversion allows seamless communication between users of legacy radios and modern IP-based networks. The device supports multi-party calls and enables integration with various communication systems through its audio and Ethernet ports.",
+    "tags": ["functionality", "conversion", "analog", "digital", "bridge"]
+  },
+  {
+    "id": "vrg-technical",
+    "content": "Technical specifications: Power supply 12V DC, Ethernet interface 10/100 Base-T, Radio interfaces up to 4 channels, Audio codec support for G.711, G.726, and GSM. Physical dimensions: 210mm (W) x 150mm (D) x 45mm (H), Weight: 0.8 kg. The device features four audio ports for radio connections and two Ethernet ports configured as a 2-port switch. The audio ports support various radio networks (HF, VHF, UHF) and dedicated mobile terminals. The Ethernet ports enable dual connectivity options for connecting to different networks or devices simultaneously.",
+    "tags": ["technical", "specifications", "power", "interface", "codec", "dimensions", "weight"]
+  },
+  {
+    "id": "vrg-network-compatibility",
+    "content": "The VRG is compatible with multiple network types: 1. HF Radio Networks (3-30 MHz) for long-distance communication, 2. VHF Radio Networks (30-300 MHz) for short to medium-range communication, 3. UHF Radio Networks (300 MHz-3 GHz) for short-range urban communications, 4. IP-Based Networks through Ethernet ports, 5. Dedicated Mobile Communication Terminals. The device's IP-based platform enables seamless integration between these different network types through signal conversion and data packetization.",
+    "tags": ["compatibility", "networks", "hf", "vhf", "uhf", "ip"]
+  },
+  {
+    "id": "vrg-applications",
+    "content": "The VRG can be deployed in various scenarios, particularly in vehicle-based applications. A common use case is connecting an HF/VHF/UHF radio or intercom system on board a vehicle (tank or ship) to a radio operator at a land office. The VRG enables extended communication range, integration with modern systems, and enhanced coordination between mobile vehicles and land-based command centers. Its compact size and lightweight design make it suitable for deployment in various environments.",
+    "tags": ["applications", "deployment", "vehicles", "military", "maritime"]
+  },
+  {
+    "id": "vrg-land-based-setup",
+    "content": "The land-based setup includes a radio operator stationed at an office with IP network connectivity. This setup receives digital signals from vehicle-mounted VRGs, converts them to analog for the operator, and enables two-way communication. The system provides centralized control, enhanced coordination, and leverages existing infrastructure for communication with mobile units. The deployment can be customized for various scenarios including disaster relief operations, large-scale events, and industrial settings.",
+    "tags": ["land-based", "setup", "operation", "control", "infrastructure"]
+  },
+  {
+    "id": "vrg-ip-platform",
+    "content": "The VRG's IP-based platform enables global reach, scalability, and interoperability. It leverages IP technology to bridge legacy radio systems with modern digital communication, supporting features like signal conversion, network connectivity through Ethernet ports, and extended communication reach. The platform processes analog audio signals from legacy radios, converts them to digital data packets for IP transmission, and manages the routing of these packets through its Ethernet ports. This enables seamless integration with various IP-based services including VoIP and cloud systems.",
+    "tags": ["ip", "platform", "technology", "integration", "features"]
+  },
+  {
+    "id": "vrg-deployment",
+    "content": "The VRG deployment process involves installation in both vehicle-based and land-based setups. In vehicles, the VRG connects to existing radio/intercom systems through its audio ports, while utilizing Ethernet ports for network connectivity. The land-based office setup typically connects to operator stations or mobile devices through the local network or internet. The deployment supports various configurations including: 1. Military vehicle communications, 2. Maritime vessel communications, 3. Disaster relief operations, 4. Large-scale event coordination, 5. Industrial remote operations. The VRG's lightweight design (under 3kg) and dual Ethernet ports provide flexibility in deployment options.",
+    "tags": ["deployment", "installation", "configuration", "setup", "operations"]
+  },
+  {
+    "id": "vrg-connectivity",
+    "content": "The VRG provides two main types of connectivity: 1. Audio Connectivity through four audio ports supporting HF, VHF, UHF radios and mobile terminals, 2. Network Connectivity through two Ethernet ports configured as a 2-port switch. The Ethernet setup enables simultaneous connection to different networks or devices, such as connecting to a local vehicle network and a wider internet connection. The device manages data packetization and transmission, converting analog signals to digital packets for IP network transmission and vice versa.",
+    "tags": ["connectivity", "ports", "network", "audio", "ethernet", "configuration"]
+  }
+]

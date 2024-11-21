@@ -1,24 +1,32 @@
 {
     "dimensions": {
-        "width": "Value in units",
-        "height": "Value in units",
-        "depth": "Value in units"
+        "width": "440 mm",
+        "height": "88 mm (2U)",
+        "depth": "280 mm"
     },
-    "weight": "Product Weight",
+    "weight": "4.5 kg",
     "power": {
-        "voltage": "Voltage requirement",
-        "consumption": "Power consumption"
+        "voltage": "100-240V AC",
+        "consumption": "40W typical"
     },
     "connectivity": [
-        "Connection Type 1",
-        "Connection Type 2"
+        "4 x Audio Ports",
+        "2 x Ethernet Ports (10/100/1000 Base-T)",
+        "1 x USB Port",
+        "1 x RS-232 Serial Port"
     ],
     "compatibility": [
-        "Compatible System 1",
-        "Compatible System 2"
+        "HF Radio Systems",
+        "VHF Radio Systems",
+        "UHF Radio Systems",
+        "P25 Radio Systems",
+        "IP Networks"
     ],
     "certifications": [
-        "Certification 1",
-        "Certification 2"
-    ]
+        "MIL-STD-810G",
+        "IP54 Rating",
+        "CE Certification",
+        "FCC Compliance"
+    ],
+    "material": "Military-grade aluminum chassis"
 }

@@ -1,0 +1,18 @@
+{
+    "product": "VRG VoIP Radio Gateway",
+    "specifications": {
+        "physical": {
+            "weight": "1.5 kg",
+            "dimensions": "220mm x 180mm x 45mm",
+            "mounting": "Wall-mount or desktop"
+        },
+        "power": {
+            "input_voltage": "12V DC",
+            "power_consumption": "10W typical"
+        },
+        "environmental": {
+            "operating_temperature": "0°C to 50°C",
+            "humidity": "10% to 90% non-condensing"
+        }
+    }
+}
