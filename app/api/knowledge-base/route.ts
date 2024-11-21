@@ -84,24 +84,27 @@ function searchKnowledgeBase(query: string, knowledgeBase: any) {
             const keyMatches = Array.from(relatedTerms).some(term => key.toLowerCase().includes(term));
             
             // For objects (like dimensions), also check their properties
-            const propertyMatches = typeof value === 'object' && 
+            const propertyMatches = typeof value === 'object' && value !== null && 
                 Object.keys(value).some(prop => Array.from(relatedTerms).some(term => prop.toLowerCase().includes(term)));
 
             if (keyMatches || propertyMatches) {
                 let formattedValue = '';
-                if (typeof value === 'object') {
+                if (typeof value === 'object' && value !== null) {
                     // For dimensions, create a more readable format
                     if (key === 'dimensions') {
-                        formattedValue = 'Product Dimensions:\n' + Object.entries(value)
+                        const dimensionsObj = value as Record<string, string | number>;
+                        formattedValue = 'Product Dimensions:\n' + Object.entries(dimensionsObj)
+                            .filter(([_, v]) => typeof v === 'string' || typeof v === 'number')
                             .map(([k, v]) => `• ${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`)
                             .join('\n');
                     } else {
-                        formattedValue = Object.entries(value)
+                        const valueObj = value as Record<string, string | number>;
+                        formattedValue = Object.entries(valueObj)
                             .map(([k, v]) => `${k}: ${v}`)
-                            .join('\n');
+                            .join(', ');
                     }
                 } else {
-                    formattedValue = value.toString();
+                    formattedValue = String(value);
                 }
                 results.push({
                     section: 'specifications',

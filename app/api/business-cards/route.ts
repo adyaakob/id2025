@@ -6,6 +6,16 @@ import crypto from 'crypto';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+interface BusinessCard {
+  id: string;
+  processedDate: string;
+  [key: string]: any;
+}
+
+interface CardData {
+  cards: BusinessCard[];
+}
+
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'business-cards.json');
 
@@ -40,7 +50,7 @@ export async function GET() {
     }
 
     const fileContent = readFileSync(DATA_FILE, 'utf-8');
-    const data = JSON.parse(fileContent);
+    const data = JSON.parse(fileContent) as CardData;
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error reading business cards:', error);
@@ -70,19 +80,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize data structure
-    let data = { cards: [] };
+    let data: CardData = { cards: [] };
     
     if (existsSync(DATA_FILE)) {
       const fileContent = readFileSync(DATA_FILE, 'utf-8');
       try {
-        data = JSON.parse(fileContent);
+        data = JSON.parse(fileContent) as CardData;
       } catch (error) {
         console.error('Error parsing existing data, starting fresh:', error);
       }
     }
     
     // Add new card
-    const newCard = {
+    const newCard: BusinessCard = {
       ...card,
       id: crypto.randomUUID(),
       processedDate: new Date().toISOString()

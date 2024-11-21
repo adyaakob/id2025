@@ -62,9 +62,9 @@ export async function processLearningQueue(confidenceThreshold: number = 0.8) {
     const toProcess = queue.filter((entry: LearningEntry) => {
         // Lower threshold for web-sourced content that has been cross-validated
         const isWebSource = entry.source.startsWith('web:');
-        const crossValidated = queue.some(e => 
-            e !== entry && 
-            areEntriesRelated(e, entry) && 
+        const crossValidated = queue.some((e: LearningEntry) =>
+            e !== entry &&
+            areEntriesRelated(e, entry) &&
             e.source !== entry.source
         );
         

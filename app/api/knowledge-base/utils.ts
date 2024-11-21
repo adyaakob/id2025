@@ -13,10 +13,11 @@ interface SearchResult {
     score: number;
 }
 
+export const kbPath = path.join(process.cwd(), 'data', 'knowledge-base.json');
+
 // Load the knowledge base from JSON file
 export async function loadKnowledgeBase(): Promise<KnowledgeBaseEntry[]> {
     try {
-        const kbPath = path.join(process.cwd(), 'data', 'knowledge-base.json');
         if (!fs.existsSync(kbPath)) {
             // Create an empty knowledge base if it doesn't exist
             const emptyKB: KnowledgeBaseEntry[] = [];
@@ -109,6 +110,5 @@ export async function addToKnowledgeBase(entry: KnowledgeBaseEntry): Promise<voi
     const kb = await loadKnowledgeBase();
     kb.push(entry);
     
-    const kbPath = path.join(process.cwd(), 'data', 'knowledge-base.json');
     fs.writeFileSync(kbPath, JSON.stringify(kb, null, 2));
 }
