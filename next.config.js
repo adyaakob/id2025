@@ -7,17 +7,6 @@ const nextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
-  // Disable API routes in static export
-  rewrites: async () => {
-    return {
-      beforeFiles: [
-        {
-          source: '/api/:path*',
-          destination: '/_404', // This will show a 404 for API routes in static export
-        },
-      ],
-    }
-  },
 }
 
 module.exports = nextConfig
