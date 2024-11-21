@@ -156,12 +156,16 @@ export async function POST(request: Request) {
         if (kbResults && kbResults.length > 0) {
             // Find most relevant entry based on query
             const relevantEntry = kbResults.find(entry => {
-                const content = entry.match.toLowerCase();
+                const content = (entry.value && typeof entry.value === 'string' ? entry.value : 
+                               typeof entry.value === 'object' ? JSON.stringify(entry.value) : '')
+                               .toLowerCase();
                 return content.includes(lowerQuery) || 
-                       entry.id.includes(lowerQuery.replace(/[^a-z0-9]/g, '-'));
+                       (entry.key && entry.key.toLowerCase().includes(lowerQuery));
             }) || kbResults[0];
             
-            response = relevantEntry.match;
+            response = typeof relevantEntry.value === 'string' ? relevantEntry.value :
+                      typeof relevantEntry.value === 'object' ? JSON.stringify(relevantEntry.value, null, 2) :
+                      'No relevant information found';
         } else {
             // Try web search for VRG-specific information
             console.log('Searching web for VRG-specific information...');
