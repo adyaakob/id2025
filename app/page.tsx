@@ -7,40 +7,22 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Radio, Shield, Network, Settings2, Antenna, Milestone,
          Speaker, Truck, Building2, Wrench, 
-         Play, Pause, Volume1, Maximize2, Settings, Send, Globe, Sun, Moon,
+         Play, Pause, Volume1, Maximize2, Settings, Send, Globe,
          Briefcase, Phone, Mail, PhoneCall, Navigation, Router } from 'lucide-react'
 import NextImage from 'next/image'
 import Link from 'next/link'
 import Slideshow, { sections } from "@/components/Slideshow"
 import BusinessCardScanner from "@/components/BusinessCardScanner"
 import AIAssistant from '@/components/AIAssistant'
+import { useTheme } from 'next-themes'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
-  const [isDarkMode, setIsDarkMode] = useState(false)
   const [currentSection, setCurrentSection] = useState(0)
   const totalDuration = 3120 // 52:00 in seconds
   const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : ''
-
-  useEffect(() => {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDarkMode(true)
-      document.documentElement.classList.add('dark')
-    }
-  }, [])
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [isDarkMode])
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode)
-  }
 
   const navigationItems = [
     { icon: Radio, label: 'Overview', section: 0 },
@@ -66,15 +48,9 @@ export default function Home() {
         <div className="flex-1 flex justify-center">
           <div className="text-3xl font-bold text-secondary-foreground tracking-wider uppercase">VRG VoIP Radio Gateway</div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleTheme}
-          className="absolute right-4 flex items-center gap-2 text-xs text-secondary-foreground hover:bg-secondary-foreground/20"
-        >
-          {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-        </Button>
+        <div className="flex items-center space-x-4">
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Main Content */}

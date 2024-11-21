@@ -51,7 +51,8 @@ const Slideshow = ({ onSectionChange, initialSection = 0 }: SlideshowProps) => {
 
     const getCurrentSlidePath = () => {
         const section = sections[currentSection];
-        return `/slides/${section.name}/slide${currentSlideInSection + 1}.jpg`;
+        const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : '';
+        return `${basePath}/slides/${section.name}/slide${currentSlideInSection + 1}.jpg`;
     };
 
     const clearSlideTimer = () => {
@@ -173,7 +174,7 @@ const Slideshow = ({ onSectionChange, initialSection = 0 }: SlideshowProps) => {
                 <div className="relative w-full h-0 pb-[56.25%]">
                     <div className="absolute inset-0 flex items-center justify-center">
                         <Image
-                            src={`/slides/${sections[currentSection].name}/slide${currentSlideInSection + 1}.jpg`}
+                            src={getCurrentSlidePath()}
                             alt={`Slide ${currentSlideInSection + 1}`}
                             fill
                             className="object-contain"
