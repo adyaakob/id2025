@@ -225,14 +225,14 @@ function formatResponse(results: any[]): string {
 }
 
 export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const query = searchParams.get('query');
-
-    if (!query) {
-        return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
-    }
-
     try {
+        const url = new URL(request.url);
+        const query = url.searchParams.get('query');
+
+        if (!query) {
+            return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
+        }
+
         const knowledgeBase = await loadKnowledgeBase();
         const results = searchKnowledgeBase(query, knowledgeBase);
         const formattedResponse = formatResponse(results);
