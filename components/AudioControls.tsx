@@ -29,7 +29,8 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
 
   useEffect(() => {
     if (audioRef.current) {
-      const audioPath = `/audio/${currentSection}/slide${currentSlide + 1}_${currentLanguage}.mp3`;
+      const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : '';
+      const audioPath = `${basePath}/audio/${currentSection}/slide${currentSlide + 1}_${currentLanguage}.mp3`;
       audioRef.current.src = audioPath;
       audioRef.current.load();
       
@@ -37,7 +38,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch(error => {
-            console.log('Audio playback failed:', error);
+            console.error('Audio playback failed:', error);
           });
         }
       }
