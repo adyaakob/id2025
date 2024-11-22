@@ -12,6 +12,8 @@ interface BusinessCard {
   email: string;
   phone: string;
   type: 'customer' | 'partner';
+  id: string;
+  processedDate: string;
 }
 
 export default function BusinessCardScanner() {
@@ -29,26 +31,74 @@ export default function BusinessCardScanner() {
     console.log('⚙️ Initializing Tesseract worker...');
     try {
       if (!workerRef.current) {
-        workerRef.current = await createWorker();
+        workerRef.current = await createWorker({
+          logger: process.env.NEXT_PUBLIC_ENABLE_TESSERACT_LOGGING === 'true' ? m => console.log(m) : undefined,
+          errorHandler: (err) => {
+            console.error('Tesseract Error:', err);
+            setProcessingError('Error processing image. Please try again.');
+          },
+        });
+        
         await workerRef.current.loadLanguage('eng');
-        await workerRef.current.initialize('eng');
+        await workerRef.current.initialize('eng', {
+          load_system_dawg: false,
+          load_freq_dawg: false,
+        });
         console.log('✅ Tesseract worker initialized successfully');
       }
       return workerRef.current;
     } catch (error) {
       console.error('❌ Failed to initialize Tesseract worker:', error);
-      throw new Error('Failed to initialize text recognition');
+      setProcessingError('Failed to initialize text recognition. Please refresh and try again.');
+      throw error;
     }
   };
 
-  // Clean up worker on unmount
   useEffect(() => {
+    // Initialize worker when component mounts
+    const init = async () => {
+      try {
+        await initializeWorker();
+      } catch (error) {
+        console.error('Failed to initialize worker:', error);
+        setProcessingError('Failed to initialize scanner. Please refresh the page.');
+      }
+    };
+    init();
+
+    // Cleanup worker when component unmounts
     return () => {
       if (workerRef.current) {
         workerRef.current.terminate();
       }
     };
   }, []);
+
+  if (processingError) {
+    return (
+      <div className="p-4 text-center">
+        <div className="text-red-500 mb-2">{processingError}</div>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setProcessingError(null);
+            setProcessing(false);
+          }}
+        >
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (processing) {
+    return (
+      <div className="p-4 text-center">
+        <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
+        <p>Processing image...</p>
+      </div>
+    );
+  }
 
   const startCamera = async () => {
     try {
@@ -107,11 +157,23 @@ export default function BusinessCardScanner() {
 
   const processImage = async (imageData: string) => {
     try {
-      const worker = await initializeWorker();
-      const { data: { text } } = await worker.recognize(imageData);
+      setProcessing(true);
+      setProcessingError(null);
       
+      const worker = await initializeWorker();
+      console.log('Processing image...');
+      
+      const result = await worker.recognize(imageData);
+      console.log('OCR Result:', result);
+      
+      if (!result?.data?.text) {
+        throw new Error('No text detected in image');
+      }
+
       // Extract business card information from the OCR text
-      const extractedData = extractBusinessCardInfo(text);
+      const extractedData = extractBusinessCardInfo(result.data.text);
+      console.log('Extracted Data:', extractedData);
+      
       setScannedData(extractedData);
       setProcessing(false);
     } catch (error) {
@@ -122,16 +184,63 @@ export default function BusinessCardScanner() {
   };
 
   const extractBusinessCardInfo = (text: string): BusinessCard => {
-    // Simple extraction logic - this can be enhanced with better parsing
-    const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
-    
+    console.log('Raw OCR Text:', text);
+    // Split text into lines and clean them
+    const lines = text.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
+    console.log('Processed Lines:', lines);
+
+    // Initialize the card data
+    const cardData: Partial<BusinessCard> = {
+      type: 'customer',
+      id: crypto.randomUUID(),
+      processedDate: new Date().toISOString()
+    };
+
+    // Try to identify each field
+    for (const line of lines) {
+      // Name (usually the first non-empty line)
+      if (!cardData.name && line.length > 2) {
+        cardData.name = line;
+        continue;
+      }
+
+      // Email (contains @ symbol)
+      if (!cardData.email && line.includes('@')) {
+        cardData.email = line.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0] || '';
+        continue;
+      }
+
+      // Phone number (contains digits and common separators)
+      if (!cardData.phone && /[\d()+-]/.test(line)) {
+        cardData.phone = line.match(/[\d()+-\s]{7,}/)?.[0]?.trim() || '';
+        continue;
+      }
+
+      // Title (usually second line if not already set)
+      if (!cardData.title) {
+        cardData.title = line;
+        continue;
+      }
+
+      // Company (remaining significant text)
+      if (!cardData.company && line.length > 2) {
+        cardData.company = line;
+      }
+    }
+
+    // Ensure all required fields have at least an empty string
     return {
-      name: lines[0] || '',
-      title: lines[1] || '',
-      company: lines[2] || '',
-      email: lines.find(line => line.includes('@')) || '',
-      phone: lines.find(line => /[\d-+()]/.test(line)) || '',
-      type: 'customer' // Default type
+      name: cardData.name || '',
+      title: cardData.title || '',
+      company: cardData.company || '',
+      email: cardData.email || '',
+      phone: cardData.phone || '',
+      type: cardData.type || 'customer',
+      id: cardData.id || crypto.randomUUID(),
+      processedDate: cardData.processedDate || new Date().toISOString()
     };
   };
 
@@ -256,18 +365,7 @@ export default function BusinessCardScanner() {
       )}
 
       {/* Processing error */}
-      {processingError && (
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-destructive">{processingError}</p>
-          <Button
-            onClick={resetStates}
-            variant="outline"
-            className="text-xs h-8 font-medium hover:bg-destructive/10 hover:text-destructive border-secondary-foreground/20"
-          >
-            TRY AGAIN
-          </Button>
-        </div>
-      )}
+      {/* Removed error handling for processing error */}
 
       {/* Show scanned data */}
       {scannedData && !processing && !processingError && (
@@ -302,12 +400,7 @@ export default function BusinessCardScanner() {
       )}
 
       {/* Processing indicator */}
-      {processing && (
-        <div className="flex flex-col items-center gap-2 py-4">
-          <RefreshCw className="h-5 w-5 animate-spin" />
-          <p className="text-xs">Processing...</p>
-        </div>
-      )}
+      {/* Removed processing indicator */}
 
       {/* Success message */}
       {processingSuccess && (
@@ -326,7 +419,9 @@ export default function BusinessCardScanner() {
 
       {/* Card list modal */}
       {showList && (
-        <BusinessCardList onClose={() => setShowList(false)} />
+        <BusinessCardList 
+          onClose={() => setShowList(false)} 
+        />
       )}
     </div>
   );

@@ -5,11 +5,27 @@ const nextConfig = {
   assetPrefix: process.env.NODE_ENV === 'production' ? '/id2025/' : '',
   images: {
     unoptimized: true,
+    domains: ['unpkg.com'],
   },
   trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
-  }
+  },
+  webpack: (config) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer/'),
+    };
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      process: 'process/browser',
+    };
+    return config;
+  },
 }
 
 module.exports = nextConfig

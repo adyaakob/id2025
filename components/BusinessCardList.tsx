@@ -24,9 +24,11 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setError(null);
     try {
-      const cards = await storage.getCards();
-      setCards(cards);
+      // For GitHub Pages, we'll only use local storage
+      const localCards = await storage.getCards();
+      setCards(localCards);
     } catch (error) {
+      console.error('Error fetching cards:', error);
       setError('Failed to load business cards');
     } finally {
       setLoading(false);
