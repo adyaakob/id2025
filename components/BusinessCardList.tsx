@@ -93,6 +93,14 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
     setEditedCard({ ...editedCard, [field]: value });
   };
 
+  const verifyGistStorage = async () => {
+    try {
+      await (storage as any).verifyGistContent();
+    } catch (error) {
+      console.error('Error verifying storage:', error);
+    }
+  };
+
   useEffect(() => {
     fetchCards();
   }, []);
@@ -106,6 +114,15 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
             Processed Business Cards
           </h2>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={verifyGistStorage}
+              title="Verify Storage"
+              className="h-8 w-8"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"

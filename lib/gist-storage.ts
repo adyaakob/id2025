@@ -166,6 +166,39 @@ class GistStorageManager {
       throw new Error('Failed to save business card');
     }
   }
+
+  async verifyGistContent(): Promise<void> {
+    if (!GIST_ID || !GITHUB_TOKEN) {
+      console.error('GitHub Gist configuration is missing');
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch gist: ${response.status} ${response.statusText}`);
+      }
+
+      const gist = await response.json();
+      const content = gist.files['business_cards.json']?.content;
+      
+      if (!content) {
+        console.log('No business cards found in Gist');
+        return;
+      }
+
+      const cards = JSON.parse(content);
+      console.log('Business Cards stored in Gist:', cards);
+    } catch (error) {
+      console.error('Error verifying Gist content:', error);
+    }
+  }
 }
 
 export const gistStorage = new GistStorageManager();
