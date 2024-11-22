@@ -58,6 +58,51 @@ class StorageManager {
     }
   }
 
+  async updateCard(updatedCard: BusinessCard): Promise<BusinessCard> {
+    if (!this.isLocalStorageAvailable()) {
+      console.warn('LocalStorage is not available');
+      throw new Error('LocalStorage is not available');
+    }
+
+    try {
+      const existingCards = this.getLocalCards();
+      const index = existingCards.findIndex(card => card.id === updatedCard.id);
+      
+      if (index === -1) {
+        throw new Error('Card not found');
+      }
+
+      // Update the card while preserving id and processedDate
+      existingCards[index] = {
+        ...updatedCard,
+        id: existingCards[index].id,
+        processedDate: existingCards[index].processedDate
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(existingCards));
+      return existingCards[index];
+    } catch (error) {
+      console.error('Failed to update card:', error);
+      throw new Error('Failed to update business card');
+    }
+  }
+
+  async deleteCard(cardId: string): Promise<void> {
+    if (!this.isLocalStorageAvailable()) {
+      console.warn('LocalStorage is not available');
+      return;
+    }
+
+    try {
+      const existingCards = this.getLocalCards();
+      const updatedCards = existingCards.filter(card => card.id !== cardId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCards));
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+      throw new Error('Failed to delete business card');
+    }
+  }
+
   async getCards(): Promise<BusinessCard[]> {
     return this.getLocalCards();
   }

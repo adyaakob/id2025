@@ -32,7 +32,15 @@ export default function BusinessCardScanner() {
     try {
       if (!workerRef.current) {
         workerRef.current = await createWorker({
-          logger: process.env.NEXT_PUBLIC_ENABLE_TESSERACT_LOGGING === 'true' ? m => console.log(m) : undefined,
+          logger: process.env.NEXT_PUBLIC_ENABLE_TESSERACT_LOGGING === 'true' ? 
+            (m: any) => {
+              if (m.status === 'recognizing text') {
+                console.log(`Progress: ${m.progress * 100}%`);
+              } else {
+                console.log(m);
+              }
+            } : 
+            () => {},
           errorHandler: (err) => {
             console.error('Tesseract Error:', err);
             setProcessingError('Error processing image. Please try again.');
@@ -271,15 +279,20 @@ export default function BusinessCardScanner() {
   };
 
   const handleProcessCard = async () => {
+    if (!scannedData) return;
+
     try {
       setProcessing(true);
       setProcessingError(null);
 
-      // Process the card
-      // Add your logic here
+      // Save the card data to storage
+      await storage.saveCard(scannedData);
 
       setProcessingSuccess(true);
       setProcessing(false);
+
+      // Reset the scanned data after successful processing
+      setScannedData(null);
     } catch (error) {
       console.error('Error processing card:', error);
       setProcessingError('Failed to process card. Please try again.');
