@@ -108,4 +108,4 @@ class StorageManager {
   }
 }
 
-export const storage = new StorageManager();
+export { gistStorage as storage } from './gist-storage';
