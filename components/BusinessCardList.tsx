@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { List, X, User, Building, Mail, Phone, Tag, RefreshCw, Trash2, Edit2, Check, XCircle, Cloud, Search } from 'lucide-react';
+import { List, X, User, Building, Mail, Phone, Tag, RefreshCw, Trash2, Edit2, Check, XCircle, Cloud, FileSearch } from 'lucide-react';
 import { storage } from '@/lib/storage';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -145,7 +145,7 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
               title="Verify Storage"
               className="h-8 w-8"
             >
-              <Search className="h-4 w-4" />
+              <FileSearch className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
