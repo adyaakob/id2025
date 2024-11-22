@@ -67,25 +67,40 @@ class GistStorageManager {
   }
 
   async syncStorage(): Promise<void> {
+    if (!GIST_ID || !GITHUB_TOKEN) {
+      throw new Error('GitHub Gist configuration is missing. Please check your environment variables.');
+    }
+
     try {
       // Get cards from both storages
       const localCards = JSON.parse(localStorage.getItem('business_cards_v2') || '[]');
+      console.log('Local cards:', localCards);
       
       // Fetch from Gist
       const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
         headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json'
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
         }
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Gist API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
         throw new Error(`Failed to fetch gist: ${response.status} ${response.statusText}`);
       }
 
       const gist = await response.json();
+      console.log('Gist response:', gist);
+      
       const gistContent = gist.files['business_cards.json']?.content || '[]';
       const gistCards = JSON.parse(gistContent);
+      console.log('Gist cards:', gistCards);
 
       // Merge cards, removing duplicates by ID
       const allCards = [...localCards, ...gistCards];
@@ -98,6 +113,8 @@ class GistStorageManager {
         new Date(b.processedDate).getTime() - new Date(a.processedDate).getTime()
       );
 
+      console.log('Merged unique cards:', uniqueCards);
+
       // Update both storages
       await this.updateGist(uniqueCards);
       localStorage.setItem('business_cards_v2', JSON.stringify(uniqueCards));
@@ -105,8 +122,8 @@ class GistStorageManager {
       console.log('Storage synced successfully:', uniqueCards);
       return uniqueCards;
     } catch (error) {
-      console.error('Error syncing storage:', error);
-      throw error;
+      console.error('Detailed sync error:', error);
+      throw new Error(`Failed to sync storage: ${error.message}`);
     }
   }
 

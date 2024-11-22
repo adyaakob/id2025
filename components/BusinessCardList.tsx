@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { List, X, User, Building, Mail, Phone, Tag, RefreshCw, Trash2, Edit2, Check, XCircle } from 'lucide-react';
+import { List, X, User, Building, Mail, Phone, Tag, RefreshCw, Trash2, Edit2, Check, XCircle, Cloud, Search } from 'lucide-react';
 import { storage } from '@/lib/storage';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -132,11 +132,11 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
               variant="ghost"
               size="icon"
               onClick={syncStorage}
-              title="Sync Storage"
+              title="Sync with Cloud"
               className="h-8 w-8"
               disabled={loading}
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <Cloud className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
             <Button
               variant="ghost"
@@ -145,12 +145,13 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
               title="Verify Storage"
               className="h-8 w-8"
             >
-              <RefreshCw className="h-4 w-4" />
+              <Search className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={fetchCards}
+              title="Refresh List"
               className="h-8 w-8"
               disabled={loading}
             >
@@ -160,6 +161,7 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
               variant="ghost"
               size="icon"
               onClick={onClose}
+              title="Close"
               className="h-8 w-8"
             >
               <X className="h-4 w-4" />
