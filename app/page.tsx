@@ -49,20 +49,20 @@ export default function Component() {
   }
 
   const navigationItems = [
-    { icon: Radio, label: 'Overview', section: 0 },
-    { icon: Antenna, label: 'Features', section: 1 },
-    { icon: Settings2, label: 'Specifications', section: 2 },
-    { icon: Speaker, label: 'Audio', section: 3 },
-    { icon: Shield, label: 'Standards', section: 4 },
-    { icon: Network, label: 'Protocols', section: 5 },
-    { icon: Router, label: 'Deployment', section: 6 },
-    { icon: Truck, label: 'Vehicle/Ship', section: 7 },
-    { icon: Building2, label: 'Land-based', section: 8 },
-    { icon: Wrench, label: 'Mechanical', section: 9 },
+    { label: 'Overview', icon: Radio, section: 0 },
+    { label: 'Security', icon: Shield, section: 1 },
+    { label: 'Network', icon: Network, section: 2 },
+    { label: 'Features', icon: Settings2, section: 3 },
+    { label: 'Radio', icon: Antenna, section: 4 },
+    { label: 'Milestones', icon: Milestone, section: 5 },
+    { label: 'Audio', icon: Speaker, section: 6 },
+    { label: 'Logistics', icon: Truck, section: 7 },
+    { label: 'Infrastructure', icon: Building2, section: 8 },
+    { label: 'Mechanical', icon: Wrench, section: 9 }
   ]
 
   const handleSectionChange = (section: number) => {
-    setCurrentSection(section);
+    setCurrentSection(section)
   }
 
   const handleAudioComplete = () => {
@@ -124,6 +124,24 @@ export default function Component() {
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col bg-card rounded-lg shadow-sm overflow-hidden">
+          {/* Navigation Bar */}
+          <div className="flex gap-2 p-4 border-b border-border/50">
+            {navigationItems.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <Button
+                  key={index}
+                  variant={currentSection === item.section ? "secondary" : "ghost"}
+                  className="flex items-center gap-1.5 text-xs h-8"
+                  onClick={() => handleSectionChange(item.section)}
+                >
+                  <Icon className="h-3 w-3" />
+                  {item.label}
+                </Button>
+              );
+            })}
+          </div>
+
           {/* Slideshow Container */}
           <div className="flex-1 bg-secondary">
             <div className="w-full h-full">
@@ -229,7 +247,7 @@ export default function Component() {
           </div>
         </Card>
 
-        <Card className="p-2">
+        <Card className="p-2 w-[300px]">
           <BusinessCardScanner />
         </Card>
 

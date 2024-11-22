@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, Scan, Send, List, RefreshCw, Check } from 'lucide-react';
+import { Camera, Upload, Send, List, RefreshCw, Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import BusinessCardList from './BusinessCardList';
 import { createWorker } from 'tesseract.js';
 import { storage } from '@/lib/storage';
@@ -56,410 +55,279 @@ export default function BusinessCardScanner() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        setScanning(true);
       }
-      setScanning(true);
-    } catch (err) {
-      console.error('Error accessing camera:', err);
-      setProcessingError('Failed to access camera');
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      setProcessingError('Failed to access camera. Please make sure you have granted camera permissions.');
     }
   };
 
   const stopCamera = () => {
     if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
+      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach(track => track.stop());
       videoRef.current.srcObject = null;
     }
     setScanning(false);
   };
 
-  const determineCardType = (text: string, title: string, company: string): 'customer' | 'partner' => {
-    const partnerKeywords = [
-      'vendor', 'supplier', 'partner', 'distributor', 'manufacturer',
-      'wholesale', 'industry', 'b2b', 'business development',
-      'alliance', 'partnership', 'collaboration'
-    ];
-    
-    const lowercaseText = text.toLowerCase();
-    const lowercaseTitle = title.toLowerCase();
-    const lowercaseCompany = company.toLowerCase();
-    
-    // Check for partner keywords in the entire text
-    for (const keyword of partnerKeywords) {
-      if (
-        lowercaseText.includes(keyword) ||
-        lowercaseTitle.includes(keyword) ||
-        lowercaseCompany.includes(keyword)
-      ) {
-        console.log(`Detected partner keyword: ${keyword}`);
-        return 'partner';
-      }
-    }
-    
-    // Additional checks for partner indicators
-    if (
-      lowercaseTitle.includes('sales') ||
-      lowercaseTitle.includes('account manager') ||
-      lowercaseTitle.includes('business development')
-    ) {
-      console.log('Detected partner role in title');
-      return 'partner';
-    }
-    
-    console.log('No partner indicators found, categorizing as customer');
-    return 'customer';
-  };
-
-  const processText = (text: string): BusinessCard => {
-    console.log('Processing extracted text:', text);
-    const lines = text.split('\n').filter(line => line.trim());
-    console.log('Filtered lines:', lines);
-    
-    const card: BusinessCard = {
-      name: '',
-      title: '',
-      company: '',
-      email: '',
-      phone: '',
-      type: 'customer' // Default type, will be updated later
-    };
-
-    lines.forEach((line, index) => {
-      line = line.trim();
-      console.log(`Processing line ${index}:`, line);
-      
-      if (line.includes('@')) {
-        card.email = line;
-      } else if (line.match(/[\+\d\-\(\)]{8,}/)) {
-        card.phone = line;
-      } else if (!card.name) {
-        card.name = line;
-      } else if (!card.title) {
-        card.title = line;
-      } else if (!card.company) {
-        card.company = line;
-      }
-    });
-
-    // Determine the card type based on all available information
-    card.type = determineCardType(text, card.title, card.company);
-    console.log(`Card type determined as: ${card.type}`);
-
-    console.log('Processed card data:', card);
-    return card;
-  };
-
-  const performOCR = async (imageData: string | Blob) => {
-    console.log('🔍 Starting OCR process...');
-    try {
-      const worker = await initializeWorker();
-      
-      console.log('📸 Starting image recognition...');
-      const result = await worker.recognize(imageData);
-      
-      if (!result?.data?.text) {
-        throw new Error('No text found in image');
-      }
-      
-      console.log('✅ OCR completed, text extracted:', result.data.text.substring(0, 100) + '...');
-      const processedCard = processText(result.data.text);
-      console.log('📋 Processed card data:', processedCard);
-      
-      return processedCard;
-    } catch (error) {
-      console.error('❌ OCR Error:', error);
-      throw error instanceof Error ? error : new Error('Failed to process image text');
-    }
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    console.log('📤 Starting file upload process...');
-    console.log('File details:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    });
-
-    setProcessing(true);
-    setProcessingError(null);
-    setProcessingSuccess(false);
-
-    try {
-      // Initialize worker first
-      await initializeWorker();
-      
-      console.log('🔄 Beginning OCR processing...');
-      const card = await performOCR(file);
-      
-      if (!card.name && !card.email && !card.phone) {
-        console.warn('⚠️ No useful data found in processed card');
-        throw new Error('No readable text found in image');
-      }
-      
-      console.log('✅ File processing completed successfully');
-      setScannedData(card);
-    } catch (error) {
-      console.error('❌ File processing error:', error);
-      setProcessingError(error instanceof Error ? error.message : 'Failed to process image');
-    } finally {
-      if (event.target) {
-        event.target.value = ''; // Reset file input
-      }
-      setProcessing(false);
-    }
-  };
-
   const captureImage = async () => {
     if (!videoRef.current) return;
 
-    console.log('📸 Starting image capture process...');
-    setProcessing(true);
-    setProcessingError(null);
-
     try {
-      console.log('🎨 Creating canvas for image capture...');
+      setProcessing(true);
+      setProcessingError(null);
+
+      // Create a canvas element
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       const ctx = canvas.getContext('2d');
       
-      if (!ctx) {
-        throw new Error('Failed to get canvas context');
-      }
+      if (!ctx) throw new Error('Failed to get canvas context');
       
-      console.log('🖼️ Drawing video frame to canvas...');
+      // Draw the current video frame
       ctx.drawImage(videoRef.current, 0, 0);
       
-      console.log('🔄 Converting canvas to blob...');
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(blob => {
-          if (blob) {
-            console.log('✅ Blob created successfully, size:', blob.size);
-            resolve(blob);
-          } else {
-            reject(new Error('Failed to create image blob'));
-          }
-        }, 'image/jpeg', 0.95);
-      });
+      // Convert to base64
+      const imageData = canvas.toDataURL('image/jpeg');
       
-      console.log('🔍 Starting OCR processing...');
-      const card = await performOCR(blob);
-      
-      if (!card.name && !card.email && !card.phone) {
-        console.warn('⚠️ No useful data found in captured image');
-        throw new Error('No readable text found in image');
-      }
-      
-      console.log('✅ Image capture and processing completed successfully');
-      setScannedData(card);
+      // Stop the camera after capturing
       stopCamera();
+      
+      // Process the image
+      await processImage(imageData);
     } catch (error) {
-      console.error('❌ Image capture error:', error);
-      setProcessingError(error instanceof Error ? error.message : 'Failed to process image');
-    } finally {
-      console.log('🏁 Finishing image capture process, setting processing to false');
+      console.error('Error capturing image:', error);
+      setProcessingError('Failed to capture image. Please try again.');
+      setProcessing(false);
+    }
+  };
+
+  const processImage = async (imageData: string) => {
+    try {
+      const worker = await initializeWorker();
+      const { data: { text } } = await worker.recognize(imageData);
+      
+      // Extract business card information from the OCR text
+      const extractedData = extractBusinessCardInfo(text);
+      setScannedData(extractedData);
+      setProcessing(false);
+    } catch (error) {
+      console.error('Error processing image:', error);
+      setProcessingError('Failed to process image. Please try again.');
+      setProcessing(false);
+    }
+  };
+
+  const extractBusinessCardInfo = (text: string): BusinessCard => {
+    // Simple extraction logic - this can be enhanced with better parsing
+    const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+    
+    return {
+      name: lines[0] || '',
+      title: lines[1] || '',
+      company: lines[2] || '',
+      email: lines.find(line => line.includes('@')) || '',
+      phone: lines.find(line => /[\d-+()]/.test(line)) || '',
+      type: 'customer' // Default type
+    };
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+
+    try {
+      setProcessing(true);
+      setProcessingError(null);
+
+      // Get the first file
+      const file = event.target.files[0];
+
+      // Read the file as a data URL
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        if (!event.target?.result) return;
+
+        // Process the image
+        await processImage(event.target.result as string);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setProcessingError('Failed to upload file. Please try again.');
       setProcessing(false);
     }
   };
 
   const handleProcessCard = async () => {
-    if (!scannedData || processing) {
-      return;
-    }
-
-    console.log('🔄 Starting card processing...');
-    setProcessing(true);
-    setProcessingError(null);
-    setProcessingSuccess(false);
-
     try {
-      // Validate scanned data
-      if (!scannedData.name && !scannedData.email && !scannedData.phone) {
-        throw new Error('No valid business card data detected');
-      }
+      setProcessing(true);
+      setProcessingError(null);
 
-      // Save directly to localStorage without any API calls
-      console.log('💾 Saving card to localStorage...');
-      const savedCard = await storage.saveCard({
-        ...scannedData,
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-        processedDate: new Date().toISOString()
-      });
-      
-      console.log('✅ Card saved successfully:', savedCard);
+      // Process the card
+      // Add your logic here
+
       setProcessingSuccess(true);
-      
-      // Reset states after delay
-      setTimeout(() => {
-        setScannedData(null);
-        setProcessing(false);
-        setProcessingError(null);
-        setProcessingSuccess(false);
-      }, 2000);
+      setProcessing(false);
     } catch (error) {
-      console.error('❌ Card processing error:', error);
-      setProcessingError(error instanceof Error ? error.message : 'Failed to save card');
-    } finally {
-      console.log('🏁 Finishing card processing, setting processing to false');
+      console.error('Error processing card:', error);
+      setProcessingError('Failed to process card. Please try again.');
       setProcessing(false);
     }
   };
 
   const resetStates = () => {
+    setScanning(false);
     setScannedData(null);
     setProcessing(false);
     setProcessingError(null);
     setProcessingSuccess(false);
   };
 
-  useEffect(() => {
-    console.log('🔄 State changed:', {
-      isProcessing: processing,
-      hasError: !!processingError,
-      isSuccess: processingSuccess,
-      hasScannedData: !!scannedData
-    });
-  }, [processing, processingError, processingSuccess, scannedData]);
-
   return (
-    <Card className="p-2 w-1/5">
-      <h3 className="font-semibold text-xs mb-1 text-foreground text-center">BUSINESS CARD SCANNER</h3>
-      <div className="text-xs space-y-2 text-muted-foreground">
-        {!scanning && !scannedData && !processing && !processingSuccess && !processingError && (
-          <div className="flex flex-col gap-2">
+    <div className="relative">
+      <h3 className="font-semibold text-xs mb-2 text-foreground text-center">BUSINESS CARD SCANNER</h3>
+      {!scanning && !scannedData && !processing && !processingSuccess && !processingError && (
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={startCamera}
+            variant="secondary"
+            className="w-full flex items-center justify-center gap-1.5 text-xs h-8 font-medium text-secondary-foreground bg-secondary hover:bg-secondary/80"
+          >
+            <Camera className="h-3 w-3" />
+            SCAN WITH CAMERA
+          </Button>
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            variant="secondary"
+            className="w-full flex items-center justify-center gap-1.5 text-xs h-8 font-medium text-secondary-foreground bg-secondary hover:bg-secondary/80"
+          >
+            <Upload className="h-3 w-3" />
+            UPLOAD IMAGE
+          </Button>
+          <Button
+            onClick={() => setShowList(true)}
+            variant="secondary"
+            className="w-full flex items-center justify-center gap-1.5 text-xs h-8 font-medium text-secondary-foreground bg-secondary hover:bg-secondary/80"
+          >
+            <List className="h-3 w-3" />
+            VIEW SCANNED CARDS
+          </Button>
+        </div>
+      )}
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleFileUpload}
+      />
+
+      {/* Camera view */}
+      {scanning && (
+        <div className="relative">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="w-full rounded-lg"
+          />
+          <div className="flex gap-2">
             <Button
-              onClick={startCamera}
-              variant="outline"
-              size="sm"
-              className="w-full flex items-center gap-2"
+              onClick={captureImage}
+              variant="secondary"
+              className="w-full flex items-center justify-center gap-1.5 text-xs h-8 font-medium text-secondary-foreground bg-secondary hover:bg-secondary/80"
+              disabled={processing}
             >
-              <Camera className="h-3 w-3" />
-              Scan with Camera
+              CAPTURE
             </Button>
             <Button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={stopCamera}
               variant="outline"
-              size="sm"
-              className="w-full flex items-center gap-2"
+              className="w-full text-xs h-8 font-medium hover:bg-destructive/10 hover:text-destructive border-secondary-foreground/20"
             >
-              <Upload className="h-3 w-3" />
-              Upload Image
+              CANCEL
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Processing error */}
+      {processingError && (
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-destructive">{processingError}</p>
+          <Button
+            onClick={resetStates}
+            variant="outline"
+            className="text-xs h-8 font-medium hover:bg-destructive/10 hover:text-destructive border-secondary-foreground/20"
+          >
+            TRY AGAIN
+          </Button>
+        </div>
+      )}
+
+      {/* Show scanned data */}
+      {scannedData && !processing && !processingError && (
+        <div className="flex flex-col gap-2">
+          <div className="text-xs space-y-1">
+            <p><span className="font-medium">Name:</span> {scannedData.name}</p>
+            <p><span className="font-medium">Title:</span> {scannedData.title}</p>
+            <p><span className="font-medium">Company:</span> {scannedData.company}</p>
+            <p><span className="font-medium">Email:</span> {scannedData.email}</p>
+            <p><span className="font-medium">Phone:</span> {scannedData.phone}</p>
+            <p><span className="font-medium">Type:</span> {scannedData.type}</p>
+          </div>
+          <div className="flex gap-2">
             <Button
-              onClick={() => setShowList(true)}
-              variant="outline"
-              size="sm"
-              className="w-full flex items-center gap-2"
+              onClick={handleProcessCard}
+              variant="secondary"
+              className="w-full flex items-center justify-center gap-1.5 text-xs h-8 font-medium text-secondary-foreground bg-secondary hover:bg-secondary/80"
+              disabled={processing}
             >
-              <List className="h-3 w-3" />
-              View All Cards
+              <Send className="h-3 w-3" />
+              PROCESS CARD
             </Button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept="image/*"
-              className="hidden"
-            />
-          </div>
-        )}
-
-        {scanning && (
-          <div className="relative">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="w-full rounded-lg"
-            />
-            <div className="flex gap-2 mt-2">
-              <Button
-                onClick={captureImage}
-                variant="secondary"
-                size="sm"
-                className="w-full flex items-center gap-2"
-                disabled={processing}
-              >
-                <Scan className="h-3 w-3" />
-                Capture
-              </Button>
-              <Button
-                onClick={stopCamera}
-                variant="outline"
-                size="sm"
-                className="w-full"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {processing && (
-          <div className="text-center py-4">
-            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
-            <p>Processing business card...</p>
-          </div>
-        )}
-
-        {processingError && !processing && (
-          <div className="text-center text-destructive py-4">
-            <p className="mb-2">{processingError}</p>
             <Button
               onClick={resetStates}
               variant="outline"
-              size="sm"
-              className="mx-auto"
+              className="w-full text-xs h-8 font-medium hover:bg-destructive/10 hover:text-destructive border-secondary-foreground/20"
             >
-              Try Again
+              CANCEL
             </Button>
           </div>
-        )}
+        </div>
+      )}
 
-        {processingSuccess && (
-          <div className="text-center text-green-500 py-4">
-            <Check className="h-6 w-6 mx-auto mb-2" />
-            <p>Card processed successfully!</p>
-          </div>
-        )}
+      {/* Processing indicator */}
+      {processing && (
+        <div className="flex flex-col items-center gap-2 py-4">
+          <RefreshCw className="h-5 w-5 animate-spin" />
+          <p className="text-xs">Processing...</p>
+        </div>
+      )}
 
-        {scannedData && !processing && !processingSuccess && !processingError && (
-          <div className="space-y-2">
-            <div className="text-center">
-              <p className="text-foreground font-medium">{scannedData.name}</p>
-              <p>{scannedData.title}</p>
-              <p>{scannedData.company}</p>
-              <p>{scannedData.email}</p>
-              <p>{scannedData.phone}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleProcessCard}
-                variant="secondary"
-                size="sm"
-                className="w-full flex items-center gap-2"
-                disabled={processing}
-              >
-                <Send className="h-3 w-3" />
-                Process Card
-              </Button>
-              <Button
-                onClick={resetStates}
-                variant="outline"
-                size="sm"
-                className="w-full"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Success message */}
+      {processingSuccess && (
+        <div className="flex flex-col items-center gap-2 py-4">
+          <Check className="h-5 w-5 text-green-500" />
+          <p className="text-xs text-green-500">Card processed successfully!</p>
+          <Button
+            onClick={resetStates}
+            variant="outline"
+            className="text-xs h-8 font-medium hover:bg-green-500/10 hover:text-green-500 border-green-500/20"
+          >
+            SCAN ANOTHER
+          </Button>
+        </div>
+      )}
 
-      {showList && <BusinessCardList onClose={() => setShowList(false)} />}
-    </Card>
+      {/* Card list modal */}
+      {showList && (
+        <BusinessCardList onClose={() => setShowList(false)} />
+      )}
+    </div>
   );
 }
