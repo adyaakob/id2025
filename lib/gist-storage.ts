@@ -66,8 +66,54 @@ class GistStorageManager {
     }
   }
 
+  async syncStorage(): Promise<void> {
+    try {
+      // Get cards from both storages
+      const localCards = JSON.parse(localStorage.getItem('business_cards_v2') || '[]');
+      
+      // Fetch from Gist
+      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch gist: ${response.status} ${response.statusText}`);
+      }
+
+      const gist = await response.json();
+      const gistContent = gist.files['business_cards.json']?.content || '[]';
+      const gistCards = JSON.parse(gistContent);
+
+      // Merge cards, removing duplicates by ID
+      const allCards = [...localCards, ...gistCards];
+      const uniqueCards = Array.from(
+        new Map(allCards.map(card => [card.id, card])).values()
+      );
+
+      // Sort by processedDate
+      uniqueCards.sort((a, b) => 
+        new Date(b.processedDate).getTime() - new Date(a.processedDate).getTime()
+      );
+
+      // Update both storages
+      await this.updateGist(uniqueCards);
+      localStorage.setItem('business_cards_v2', JSON.stringify(uniqueCards));
+
+      console.log('Storage synced successfully:', uniqueCards);
+      return uniqueCards;
+    } catch (error) {
+      console.error('Error syncing storage:', error);
+      throw error;
+    }
+  }
+
   async getCards(): Promise<BusinessCard[]> {
     try {
+      // Try to sync first
+      await this.syncStorage();
       return await this.fetchGist();
     } catch (error) {
       console.error('Error fetching cards from Gist:', error);

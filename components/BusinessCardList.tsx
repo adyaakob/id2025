@@ -101,6 +101,20 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const syncStorage = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await (storage as any).syncStorage();
+      await fetchCards();
+    } catch (error) {
+      console.error('Error syncing storage:', error);
+      setError('Failed to sync storage. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchCards();
   }, []);
@@ -114,6 +128,16 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
             Processed Business Cards
           </h2>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={syncStorage}
+              title="Sync Storage"
+              className="h-8 w-8"
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
