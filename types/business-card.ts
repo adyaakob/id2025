@@ -1,6 +1,6 @@
 export interface BusinessCard {
-  id?: string;
-  processedDate?: string;
+  id: string;
+  processedDate: string;
   name: string;
   title: string;
   company: string;
