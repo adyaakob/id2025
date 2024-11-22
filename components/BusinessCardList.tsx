@@ -24,10 +24,31 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setError(null);
     try {
-      const cards = await storage.getCards();
-      setCards(cards);
+      // Try to fetch from API first
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/business-cards`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch from API');
+      }
+      const apiData = await response.json();
+      
+      // Then get local cards
+      const localCards = await storage.getCards();
+      
+      // Merge cards, preferring local versions if they exist
+      const mergedCards = Array.from(
+        new Map([...apiData.cards, ...localCards].map(card => [card.id, card])).values()
+      );
+      
+      setCards(mergedCards);
     } catch (error) {
-      setError('Failed to load business cards');
+      console.error('Error fetching cards:', error);
+      // Fall back to local storage only
+      try {
+        const localCards = await storage.getCards();
+        setCards(localCards);
+      } catch (localError) {
+        setError('Failed to load business cards');
+      }
     } finally {
       setLoading(false);
     }

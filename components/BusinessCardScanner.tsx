@@ -29,7 +29,12 @@ export default function BusinessCardScanner() {
     console.log('⚙️ Initializing Tesseract worker...');
     try {
       if (!workerRef.current) {
-        workerRef.current = await createWorker();
+        workerRef.current = await createWorker({
+          logger: process.env.NEXT_PUBLIC_ENABLE_TESSERACT_LOGGING === 'true' ? m => console.log(m) : undefined,
+          cachePath: '/tmp/tesseract-cache',
+          corePath: 'https://unpkg.com/tesseract.js-core@v4.0.3',
+          workerPath: 'https://unpkg.com/tesseract.js@v4.1.1/dist/worker.min.js',
+        });
         await workerRef.current.loadLanguage('eng');
         await workerRef.current.initialize('eng');
         console.log('✅ Tesseract worker initialized successfully');
@@ -326,7 +331,9 @@ export default function BusinessCardScanner() {
 
       {/* Card list modal */}
       {showList && (
-        <BusinessCardList onClose={() => setShowList(false)} />
+        <BusinessCardList 
+          onClose={() => setShowList(false)} 
+        />
       )}
     </div>
   );
