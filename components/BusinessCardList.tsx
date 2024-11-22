@@ -46,12 +46,16 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
     }
 
     setDeleting(cardId);
+    setError(null);
     try {
       await storage.deleteCard(cardId);
+      // Refresh the list after successful deletion
       await fetchCards();
     } catch (error) {
       console.error('Error deleting card:', error);
-      setError('Failed to delete business card');
+      setError('Failed to delete business card. Please try again.');
+      // Try to refresh the list anyway to ensure we're showing the latest state
+      await fetchCards();
     } finally {
       setDeleting(null);
     }

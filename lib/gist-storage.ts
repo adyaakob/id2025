@@ -30,24 +30,39 @@ class GistStorageManager {
       throw new Error('GitHub Gist configuration is missing');
     }
 
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        files: {
-          'business_cards.json': {
-            content: JSON.stringify(cards, null, 2)
+    try {
+      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        },
+        body: JSON.stringify({
+          files: {
+            'business_cards.json': {
+              content: JSON.stringify(cards, null, 2)
+            }
           }
-        }
-      })
-    });
+        })
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to update gist');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Gist update failed:', errorData);
+        throw new Error(`Failed to update gist: ${response.status} ${response.statusText}`);
+      }
+
+      // Update localStorage as backup
+      localStorage.setItem('business_cards_v2', JSON.stringify(cards));
+    } catch (error) {
+      console.error('Error updating gist:', error);
+      // Still update localStorage even if gist update fails
+      localStorage.setItem('business_cards_v2', JSON.stringify(cards));
+      throw error;
     }
   }
 
@@ -118,12 +133,15 @@ class GistStorageManager {
       const existingCards = await this.getCards();
       const updatedCards = existingCards.filter(card => card.id !== cardId);
       
-      await this.updateGist(updatedCards);
-      
-      // Also update localStorage as backup
-      localStorage.setItem('business_cards_v2', JSON.stringify(updatedCards));
+      try {
+        await this.updateGist(updatedCards);
+      } catch (error) {
+        console.error('Failed to update gist, falling back to localStorage:', error);
+        // Update localStorage even if gist update fails
+        localStorage.setItem('business_cards_v2', JSON.stringify(updatedCards));
+      }
     } catch (error) {
-      console.error('Failed to delete card from Gist:', error);
+      console.error('Failed to delete card:', error);
       throw new Error('Failed to delete business card');
     }
   }
