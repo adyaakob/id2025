@@ -1,23 +1,17 @@
 import { BusinessCard } from '@/types/business-card';
 import { GITHUB_CONFIG } from '@/config/env.config';
 
-const { GITHUB_TOKEN, GIST_ID } = GITHUB_CONFIG;
+const { GIST_ID } = GITHUB_CONFIG;
 
 class GistStorageManager {
   private async fetchGist() {
-    if (!GIST_ID || !GITHUB_TOKEN) {
+    if (!GIST_ID) {
       throw new Error('GitHub Gist configuration is missing');
     }
 
     try {
-      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json'
-        }
-      });
-
+      const response = await fetch('/api/sync');
+      
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Gist API Error:', {
@@ -38,16 +32,14 @@ class GistStorageManager {
   }
 
   private async updateGist(cards: BusinessCard[]) {
-    if (!GIST_ID || !GITHUB_TOKEN) {
+    if (!GIST_ID) {
       throw new Error('GitHub Gist configuration is missing');
     }
 
     try {
-      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        method: 'PATCH',
+      const response = await fetch('/api/sync', {
+        method: 'POST',
         headers: {
-          'Authorization': `Bearer ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -78,8 +70,8 @@ class GistStorageManager {
   }
 
   async syncStorage(): Promise<void> {
-    if (!GIST_ID || !GITHUB_TOKEN) {
-      console.error('Missing configuration:', { GIST_ID: !!GIST_ID, GITHUB_TOKEN: !!GITHUB_TOKEN });
+    if (!GIST_ID) {
+      console.error('Missing configuration:', { GIST_ID: !!GIST_ID });
       throw new Error('GitHub Gist configuration is missing. Please check your environment variables.');
     }
 
@@ -154,33 +146,6 @@ class GistStorageManager {
     }
   }
 
-  async updateCard(updatedCard: BusinessCard): Promise<BusinessCard> {
-    try {
-      const existingCards = await this.getCards();
-      const index = existingCards.findIndex(card => card.id === updatedCard.id);
-      
-      if (index === -1) {
-        throw new Error('Card not found');
-      }
-
-      existingCards[index] = {
-        ...updatedCard,
-        id: existingCards[index].id,
-        processedDate: existingCards[index].processedDate
-      };
-
-      await this.updateGist(existingCards);
-      
-      // Also update localStorage as backup
-      localStorage.setItem('business_cards_v2', JSON.stringify(existingCards));
-      
-      return existingCards[index];
-    } catch (error) {
-      console.error('Failed to update card in Gist:', error);
-      throw new Error('Failed to update business card');
-    }
-  }
-
   async deleteCard(cardId: string): Promise<void> {
     try {
       const existingCards = await this.getCards();
@@ -199,40 +164,50 @@ class GistStorageManager {
     }
   }
 
-  private saveToLocalStorage(card: BusinessCard): BusinessCard {
+  async updateCard(updatedCard: BusinessCard): Promise<void> {
     try {
-      const stored = localStorage.getItem('business_cards_v2');
-      const existingCards = stored ? JSON.parse(stored) : [];
+      const existingCards = await this.getCards();
+      const cardIndex = existingCards.findIndex(card => card.id === updatedCard.id);
       
-      const cardToSave = {
-        ...card,
-        id: card.id || crypto.randomUUID(),
-        processedDate: card.processedDate || new Date().toISOString()
-      };
+      if (cardIndex === -1) {
+        throw new Error('Card not found');
+      }
       
-      existingCards.push(cardToSave);
+      existingCards[cardIndex] = updatedCard;
+      await this.updateGist(existingCards);
+      
+      // Update localStorage as backup
       localStorage.setItem('business_cards_v2', JSON.stringify(existingCards));
-      
-      return cardToSave;
     } catch (error) {
-      console.error('Failed to save to localStorage:', error);
-      throw new Error('Failed to save business card');
+      console.error('Failed to update card:', error);
+      throw new Error('Failed to update business card');
     }
   }
 
+  private saveToLocalStorage(card: BusinessCard): BusinessCard {
+    const stored = localStorage.getItem('business_cards_v2');
+    const existingCards = stored ? JSON.parse(stored) : [];
+    
+    const cardToSave = {
+      ...card,
+      id: card.id || crypto.randomUUID(),
+      processedDate: card.processedDate || new Date().toISOString()
+    };
+    
+    existingCards.push(cardToSave);
+    localStorage.setItem('business_cards_v2', JSON.stringify(existingCards));
+    
+    return cardToSave;
+  }
+
   async verifyGistContent(): Promise<void> {
-    if (!GIST_ID || !GITHUB_TOKEN) {
+    if (!GIST_ID) {
       console.error('GitHub Gist configuration is missing');
       return;
     }
 
     try {
-      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json'
-        }
-      });
+      const response = await fetch('/api/sync');
 
       if (!response.ok) {
         throw new Error(`Failed to fetch gist: ${response.status} ${response.statusText}`);
