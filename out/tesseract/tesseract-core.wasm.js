@@ -1,0 +1,1 @@
+Found. Redirecting to /tesseract.js-core@4.0.4/tesseract-core.wasm.js
