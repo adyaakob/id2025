@@ -5,6 +5,7 @@ import { List, X, User, Building, Mail, Phone, Tag, RefreshCw, Trash2, Edit2, Ch
 import { storage } from '@/lib/storage';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/toast";
 
 interface BusinessCard {
   id: string;
@@ -25,6 +26,7 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [editedCard, setEditedCard] = useState<BusinessCard | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchCards = async () => {
     setLoading(true);
@@ -101,17 +103,24 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const syncStorage = async () => {
-    setLoading(true);
-    setError(null);
+  const syncGistStorage = async () => {
     try {
-      await (storage as any).syncStorage();
-      await fetchCards();
+      setIsLoading(true);
+      await storage.syncStorage();
+      await fetchCards(); // Refresh the list after sync
+      toast({
+        title: "Success",
+        description: "Storage synced successfully",
+      });
     } catch (error) {
-      console.error('Error syncing storage:', error);
-      setError('Failed to sync storage. Please try again.');
+      console.error('Sync error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to sync storage. Please check your GitHub token and Gist ID.",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -131,12 +140,12 @@ export default function BusinessCardList({ onClose }: { onClose: () => void }) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={syncStorage}
+              onClick={syncGistStorage}
               title="Sync with Cloud"
               className="h-8 w-8"
-              disabled={loading}
+              disabled={isLoading}
             >
-              <Cloud className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <Cloud className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
             <Button
               variant="ghost"
