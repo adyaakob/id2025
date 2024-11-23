@@ -9,7 +9,7 @@ import { Radio, Shield, Network, Settings2, Antenna, Milestone,
          Speaker, Truck, Building2, Wrench, 
          Play, Pause, Volume1, Maximize2, Settings, Send, Globe, Sun, Moon,
          Briefcase, Phone, Mail, PhoneCall, Navigation, Router } from 'lucide-react'
-import NextImage from 'next/image'
+import Image from 'next/image'
 import Link from 'next/link'
 import Slideshow, { sections } from "@/components/Slideshow"
 import BusinessCardScanner from "@/components/BusinessCardScanner"
@@ -50,14 +50,14 @@ export default function Component() {
 
   const navigationItems = [
     { label: 'Overview', icon: Radio, section: 0 },
-    { label: 'Security', icon: Shield, section: 1 },
-    { label: 'Network', icon: Network, section: 2 },
-    { label: 'Features', icon: Settings2, section: 3 },
-    { label: 'Radio', icon: Antenna, section: 4 },
-    { label: 'Milestones', icon: Milestone, section: 5 },
-    { label: 'Audio', icon: Speaker, section: 6 },
-    { label: 'Logistics', icon: Truck, section: 7 },
-    { label: 'Infrastructure', icon: Building2, section: 8 },
+    { label: 'Features', icon: Settings2, section: 1 },
+    { label: 'Specification', icon: Network, section: 2 },
+    { label: 'Audio', icon: Speaker, section: 3 },
+    { label: 'Standards', icon: Shield, section: 4 },
+    { label: 'Protocols', icon: Antenna, section: 5 },
+    { label: 'Deployment', icon: Milestone, section: 6 },
+    { label: 'Vehicle/Ship', icon: Truck, section: 7 },
+    { label: 'Land-based', icon: Building2, section: 8 },
     { label: 'Mechanical', icon: Wrench, section: 9 }
   ]
 
@@ -76,13 +76,6 @@ export default function Component() {
       <header className="bg-secondary text-secondary-foreground p-4 flex justify-between items-center">
         <div className="flex-1 flex justify-center">
           <div className="flex items-center gap-4">
-            <NextImage
-              src={getAssetPath('public/logo/vrg-logo.png')}
-              alt="VRG Logo"
-              width={48}
-              height={48}
-              priority
-            />
             <div className="text-3xl font-bold text-secondary-foreground tracking-wider uppercase">VRG VoIP Radio Gateway</div>
           </div>
         </div>
@@ -223,7 +216,7 @@ export default function Component() {
 
         <Card className="p-2 w-1/5">
           <div className="flex justify-center items-center h-full">
-            <NextImage
+            <Image
               src={getAssetPath("/images/teqarmada-logo.png")}
               alt="Teq Armada Logo"
               width={150}

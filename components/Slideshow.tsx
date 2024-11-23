@@ -10,16 +10,16 @@ import { AudioControls } from './AudioControls';
 import { getAssetPath } from '@/lib/utils';
 
 export const sections = [
-    { name: 'overview', slides: 9 },
-    { name: 'features', slides: 3 },
-    { name: 'specifications', slides: 3 },
-    { name: 'audio', slides: 3 },
-    { name: 'standards', slides: 3 },
-    { name: 'protocols', slides: 3 },
-    { name: 'deployment', slides: 3 },
-    { name: 'vehicle_ship', slides: 3 },
-    { name: 'land_based', slides: 3 },
-    { name: 'mechanical', slides: 3 }
+    { name: 'overview', slides: 9, label: 'Overview' },
+    { name: 'features', slides: 3, label: 'Features' },
+    { name: 'specification', slides: 3, label: 'Specification' },
+    { name: 'audio', slides: 3, label: 'Audio' },
+    { name: 'standards', slides: 3, label: 'Standards' },
+    { name: 'protocols', slides: 3, label: 'Protocols' },
+    { name: 'deployment', slides: 3, label: 'Deployment' },
+    { name: 'vehicle_ship', slides: 3, label: 'Vehicle/Ship' },
+    { name: 'land_based', slides: 3, label: 'Land-based' },
+    { name: 'mechanical', slides: 3, label: 'Mechanical' }
 ];
 
 interface SlideshowProps {
@@ -52,7 +52,7 @@ const Slideshow = ({ onSectionChange, initialSection = 0 }: SlideshowProps) => {
 
     const getCurrentSlidePath = () => {
         const section = sections[currentSection];
-        const cleanPath = `public/slides/${section.name}/slide${currentSlideInSection + 1}.jpg`;
+        const cleanPath = `slides/${section.name}/slide${currentSlideInSection + 1}.jpg`;
         return getAssetPath(cleanPath);
     };
 
@@ -169,6 +169,12 @@ const Slideshow = ({ onSectionChange, initialSection = 0 }: SlideshowProps) => {
         }
     };
 
+    const navigationItems = sections.map((section, index) => ({
+        label: section.label,
+        icon: null,
+        section: index
+    }));
+
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black">
             <div className="absolute inset-0 flex items-center justify-center">
@@ -202,7 +208,7 @@ const Slideshow = ({ onSectionChange, initialSection = 0 }: SlideshowProps) => {
                         <ChevronRight size={24} />
                     </button>
                     <span className="text-white">
-                        {sections[currentSection].name} - {currentSlideInSection + 1}/{sections[currentSection].slides}
+                        {sections[currentSection].label} - {currentSlideInSection + 1}/{sections[currentSection].slides}
                     </span>
                 </div>
                 

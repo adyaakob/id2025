@@ -8,28 +8,21 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Get the correct path for assets (images, audio, etc.) that works in both development and production
  * @param path - The path to the asset relative to the public directory
- * @returns The correct path that works in both development and GitHub Pages
+ * @returns The correct path that works in both development and Vercel
  */
 export function getAssetPath(path: string): string {
   // Remove leading slash if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  
-  // In production (GitHub Pages), prefix with /id2025
-  if (process.env.NODE_ENV === 'production') {
-    return `/id2025/${cleanPath}`;
-  }
-  
-  // In development, use path as is
   return `/${cleanPath}`;
 }
 
 /**
  * Get the base URL for the current environment
- * @returns The base URL including the base path for GitHub Pages in production
+ * @returns The base URL for the current environment
  */
 export function getBaseUrl(): string {
   if (process.env.NODE_ENV === 'production') {
-    return 'https://adyaakob.github.io/id2025';
+    return process.env.NEXT_PUBLIC_API_BASE_URL || '';
   }
-  return '';
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 }

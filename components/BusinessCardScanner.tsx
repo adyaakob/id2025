@@ -31,53 +31,23 @@ export default function BusinessCardScanner() {
     console.log('⚙️ Initializing Tesseract worker...');
     try {
       if (!workerRef.current) {
-        workerRef.current = await createWorker({
-          logger: process.env.NEXT_PUBLIC_ENABLE_TESSERACT_LOGGING === 'true' ? 
-            (m: any) => {
-              if (m.status === 'recognizing text') {
-                console.log(`Progress: ${m.progress * 100}%`);
-              } else {
-                console.log(m);
-              }
-            } : 
-            () => {},
-          errorHandler: (err) => {
-            console.error('Tesseract Error:', err);
-            setProcessingError('Error processing image. Please try again.');
-          },
-        });
-        
+        workerRef.current = await createWorker();
         await workerRef.current.loadLanguage('eng');
-        await workerRef.current.initialize('eng', {
-          load_system_dawg: false,
-          load_freq_dawg: false,
-        });
+        await workerRef.current.initialize('eng');
         console.log('✅ Tesseract worker initialized successfully');
       }
-      return workerRef.current;
     } catch (error) {
-      console.error('❌ Failed to initialize Tesseract worker:', error);
-      setProcessingError('Failed to initialize text recognition. Please refresh and try again.');
-      throw error;
+      console.error('Failed to initialize Tesseract worker:', error);
+      setProcessingError('Error initializing scanner. Please try again.');
     }
   };
 
   useEffect(() => {
-    // Initialize worker when component mounts
-    const init = async () => {
-      try {
-        await initializeWorker();
-      } catch (error) {
-        console.error('Failed to initialize worker:', error);
-        setProcessingError('Failed to initialize scanner. Please refresh the page.');
-      }
-    };
-    init();
-
-    // Cleanup worker when component unmounts
+    initializeWorker();
     return () => {
       if (workerRef.current) {
         workerRef.current.terminate();
+        workerRef.current = null;
       }
     };
   }, []);
