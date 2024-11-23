@@ -30,7 +30,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
 
   useEffect(() => {
     if (audioRef.current) {
-      const audioPath = getAssetPath(`audio/${currentSection}/slide${currentSlide + 1}_${currentLanguage}.mp3`);
+      const audioPath = getAssetPath(`public/audio/${currentSection}/slide${currentSlide + 1}_${currentLanguage}.mp3`);
       audioRef.current.src = audioPath;
       audioRef.current.load();
       

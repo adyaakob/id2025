@@ -75,7 +75,16 @@ export default function Component() {
       {/* Header */}
       <header className="bg-secondary text-secondary-foreground p-4 flex justify-between items-center">
         <div className="flex-1 flex justify-center">
-          <div className="text-3xl font-bold text-secondary-foreground tracking-wider uppercase">VRG VoIP Radio Gateway</div>
+          <div className="flex items-center gap-4">
+            <NextImage
+              src={getAssetPath('public/logo/vrg-logo.png')}
+              alt="VRG Logo"
+              width={48}
+              height={48}
+              priority
+            />
+            <div className="text-3xl font-bold text-secondary-foreground tracking-wider uppercase">VRG VoIP Radio Gateway</div>
+          </div>
         </div>
         <Button
           variant="ghost"

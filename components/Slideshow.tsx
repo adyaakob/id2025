@@ -52,7 +52,8 @@ const Slideshow = ({ onSectionChange, initialSection = 0 }: SlideshowProps) => {
 
     const getCurrentSlidePath = () => {
         const section = sections[currentSection];
-        return getAssetPath(`slides/${section.name}/slide${currentSlideInSection + 1}.jpg`);
+        const cleanPath = `public/slides/${section.name}/slide${currentSlideInSection + 1}.jpg`;
+        return getAssetPath(cleanPath);
     };
 
     const clearSlideTimer = () => {
