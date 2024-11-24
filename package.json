@@ -7,8 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint",
-    "postbuild": "touch out/.nojekyll"
+    "lint": "next lint"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.1.2",
