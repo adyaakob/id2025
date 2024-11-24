@@ -2,6 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { BusinessCard } from '@/types/business-card';
 
+// First, define the allowed types
+type ContactType = "customer" | "partner";
+
 class CSVStorageManager {
   private filePath: string;
   private headers: string[];
@@ -24,6 +27,13 @@ class CSVStorageManager {
 
   private parseCSVLine(line: string): BusinessCard {
     const values = line.split(',').map(value => value.trim());
+    // Validate the type value
+    const type = values[6] as string;
+    if (type !== "customer" && type !== "partner") {
+      // Default to "customer" if invalid value
+      values[6] = "customer";
+    }
+
     return {
       id: values[0],
       name: values[1],
@@ -31,7 +41,7 @@ class CSVStorageManager {
       company: values[3],
       email: values[4],
       phone: values[5],
-      type: values[6],
+      type: values[6] as ContactType, // Type assertion after validation
       processedDate: values[7]
     };
   }
