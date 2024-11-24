@@ -2,14 +2,13 @@ services:
   - type: web
     name: id2025
     env: node
-    buildCommand: npm install && npm run build:staging
-    startCommand: npm run start:staging
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NEXT_PUBLIC_ENVIRONMENT
-        value: staging
       - key: NEXT_PUBLIC_API_URL
         value: https://id2025.onrender.com
     autoDeploy: true
     branch: staging
+    healthCheckPath: /
