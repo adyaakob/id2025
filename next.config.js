@@ -2,15 +2,15 @@
 
 /** @type {import('next').NextConfig} */
 module.exports = {
-  output: 'export',  // Changed to export for GitHub Pages
+  output: 'export',
   images: {
-    domains: ['unpkg.com'],
     unoptimized: true
   },
   typescript: {
-    // Since it works on localhost, we can ignore TypeScript errors
     ignoreBuildErrors: true
   },
-  basePath: '/id2025',
-  assetPrefix: '/id2025'
+  basePath: process.env.NODE_ENV === 'production' ? '/id2025' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/id2025' : '',
+  trailingSlash: true,
+  skipTrailingSlashRedirect: true
 }
