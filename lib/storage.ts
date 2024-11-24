@@ -1,89 +1,40 @@
-import { BusinessCard } from '@/types/business-card';
+import { BusinessCard } from '@/types/types';
 
-class StorageManager {
-  async getCards(): Promise<BusinessCard[]> {
-    try {
-      console.log('StorageManager: Fetching cards from API...');
-      const response = await fetch('/api/business-cards');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch cards');
-      }
-      const data = await response.json();
-      console.log('StorageManager: Fetched cards:', data.cards);
-      return data.cards;
-    } catch (error) {
-      console.error('StorageManager: Error fetching cards:', error);
-      throw error;
+const STORAGE_KEY = 'businessCards';
+const IMAGE_STORAGE_KEY = 'businessCardImages';
+
+export const storage = {
+  getBusinessCards: (): BusinessCard[] => {
+    if (typeof window === 'undefined') return [];
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  saveBusinessCard: (card: BusinessCard, imageData?: string) => {
+    if (typeof window === 'undefined') return;
+    
+    // Save the business card data
+    const cards = storage.getBusinessCards();
+    cards.push(card);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+
+    // Save the image if provided
+    if (imageData) {
+      const images = storage.getBusinessCardImages();
+      images[card.id] = imageData;
+      localStorage.setItem(IMAGE_STORAGE_KEY, JSON.stringify(images));
     }
-  }
+  },
 
-  async saveCard(card: Omit<BusinessCard, 'id' | 'processedDate'>): Promise<BusinessCard> {
-    try {
-      console.log('StorageManager: Saving card:', card);
-      const response = await fetch('/api/business-cards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(card),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save card');
-      }
-      const data = await response.json();
-      console.log('StorageManager: Saved card:', data.card);
-      return data.card;
-    } catch (error) {
-      console.error('StorageManager: Error saving card:', error);
-      throw error;
-    }
-  }
+  getBusinessCardImages: (): Record<string, string> => {
+    if (typeof window === 'undefined') return {};
+    const data = localStorage.getItem(IMAGE_STORAGE_KEY);
+    return data ? JSON.parse(data) : {};
+  },
 
-  async updateCard(card: BusinessCard): Promise<BusinessCard> {
-    try {
-      console.log('StorageManager: Updating card:', card);
-      const response = await fetch('/api/business-cards', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(card),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update card');
-      }
-      const data = await response.json();
-      console.log('StorageManager: Updated card:', data.card);
-      return data.card;
-    } catch (error) {
-      console.error('StorageManager: Error updating card:', error);
-      throw error;
-    }
+  clearBusinessCards: () => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(IMAGE_STORAGE_KEY);
   }
-
-  async deleteCard(id: string): Promise<void> {
-    try {
-      console.log('StorageManager: Deleting card:', id);
-      const response = await fetch('/api/business-cards', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete card');
-      }
-      console.log('StorageManager: Deleted card:', id);
-    } catch (error) {
-      console.error('StorageManager: Error deleting card:', error);
-      throw error;
-    }
-  }
-}
-
-export const storage = new StorageManager();
+};
