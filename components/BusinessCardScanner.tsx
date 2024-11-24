@@ -5,6 +5,8 @@ import BusinessCardList from './BusinessCardList';
 import { createWorker } from 'tesseract.js';
 import { storage } from '@/lib/storage';
 import { toast } from "@/components/ui/use-toast";
+import { saveAs } from 'file-saver';
+import Papa from 'papaparse';
 
 interface BusinessCard {
   name: string;
@@ -15,6 +17,15 @@ interface BusinessCard {
   type: 'customer' | 'partner';
   id: string;
   processedDate: string;
+}
+
+export function saveToCSV(businessCards: BusinessCard[]) {
+  // Convert data to CSV format
+  const csv = Papa.unparse(businessCards);
+  
+  // Create blob and save file
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, `business_cards_${new Date().toISOString()}.csv`);
 }
 
 export default function BusinessCardScanner() {

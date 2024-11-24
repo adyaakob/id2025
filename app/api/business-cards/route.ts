@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BusinessCard } from '@/types/business-card';
 import { readCards, addCard, updateCard, deleteCard } from '@/lib/server/csv-utils';
+import { writeFile } from 'fs/promises';
+import path from 'path';
+import Papa from 'papaparse';
 
 // Configure CORS headers
 const corsHeaders = {
@@ -28,14 +31,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const card = await request.json();
-    const savedCard = await addCard(card as Omit<BusinessCard, 'id' | 'processedDate'>);
-    return NextResponse.json({ card: savedCard }, { headers: corsHeaders });
+    const data = await request.json();
+    const csvContent = Papa.unparse(data);
+    
+    const filePath = path.join(process.cwd(), 'data', 'business_cards.csv');
+    await writeFile(filePath, csvContent);
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error saving business card:', error);
+    console.error('Error saving CSV:', error);
     return NextResponse.json(
-      { error: 'Failed to save business card', details: error instanceof Error ? error.message : String(error) },
-      { status: 500, headers: corsHeaders }
+      { error: 'Failed to save business cards' },
+      { status: 500 }
     );
   }
 }
