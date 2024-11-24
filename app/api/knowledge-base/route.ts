@@ -224,6 +224,8 @@ function formatResponse(results: any[]): string {
     return results[0]?.match.trim() || 'I could not find information about that.';
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         const query = request.nextUrl.searchParams.get('query');
