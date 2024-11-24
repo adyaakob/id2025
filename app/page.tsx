@@ -9,7 +9,7 @@ import { Radio, Shield, Network, Settings2, Antenna, Milestone,
          Speaker, Truck, Building2, Wrench, 
          Play, Pause, Volume1, Maximize2, Settings, Send, Globe, Sun, Moon,
          Briefcase, Phone, Mail, PhoneCall, Navigation, Router } from 'lucide-react'
-import Image from 'next/image'
+import NextImage from 'next/image'
 import Link from 'next/link'
 import Slideshow, { sections } from "@/components/Slideshow"
 import BusinessCardScanner from "@/components/BusinessCardScanner"
@@ -27,24 +27,13 @@ export default function Component() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isMuted, setIsMuted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [showCompanyInfo, setShowCompanyInfo] = useState(false)
+  const [showBusinessScanner, setShowBusinessScanner] = useState(false)
+  const [showContactForm, setShowContactForm] = useState(false)
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
   const audioRef = useRef<HTMLAudioElement>(null)
   const totalDuration = 3120 // 52:00 in seconds
-
-  // Device detection
-  useEffect(() => {
-    const checkDevice = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
-    
-    // Initial check
-    checkDevice()
-    
-    // Add resize listener
-    window.addEventListener('resize', checkDevice)
-    
-    // Cleanup
-    return () => window.removeEventListener('resize', checkDevice)
-  }, [])
 
   useEffect(() => {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -61,17 +50,74 @@ export default function Component() {
     }
   }, [isDarkMode])
 
+  useEffect(() => {
+    const checkDevice = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+
+    // Initial check
+    checkDevice()
+
+    // Add resize listener
+    window.addEventListener('resize', checkDevice)
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkDevice)
+  }, [])
+
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
+    document.documentElement.classList.toggle('dark')
   }
 
-  // Mobile view component
+  const navigationItems = [
+    { label: 'Overview', icon: Radio, section: 'overview' },
+    { label: 'Features', icon: Settings2, section: 'features' },
+    { label: 'Specifications', icon: Shield, section: 'specifications' },
+    { label: 'Audio', icon: Speaker, section: 'audio' },
+    { label: 'Standards', icon: Milestone, section: 'standards' },
+    { label: 'Protocols', icon: Network, section: 'protocols' },
+    { label: 'Deployment', icon: Settings, section: 'deployment' },
+    { label: 'Vehicle/Ship', icon: Truck, section: 'vehicle_ship' },
+    { label: 'Land-based', icon: Building2, section: 'land_based' },
+    { label: 'Mechanical', icon: Wrench, section: 'mechanical' }
+  ]
+
+  const handleSectionChange = (section: number) => {
+    setCurrentSection(section)
+  }
+
+  const handleAudioComplete = () => {
+    setIsPlaying(false)
+    setCurrentTime(0)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim()) return
+
+    setMessages([...messages, { role: 'user', content: input }])
+    setInput('')
+  }
+
+  const handleNavigation = (section: string) => {
+    setCurrentSection(section.toLowerCase())
+  }
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % sections.length)
+  }
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + sections.length) % sections.length)
+  }
+
   const MobileView = () => (
     <div className="flex flex-col gap-4 p-4 bg-background">
       {/* Company Info */}
       <Card className="p-4">
         <div className="flex flex-col items-center gap-4">
-          <Image
+          <NextImage
             src={getAssetPath("/images/teqarmada-logo.png")}
             alt="Teq Armada Logo"
             width={200}
@@ -128,128 +174,105 @@ export default function Component() {
     </div>
   )
 
-  const navigationItems = [
-    { label: 'Overview', icon: Radio, section: 0 },
-    { label: 'Features', icon: Settings2, section: 1 },
-    { label: 'Specification', icon: Network, section: 2 },
-    { label: 'Audio', icon: Speaker, section: 3 },
-    { label: 'Standards', icon: Shield, section: 4 },
-    { label: 'Protocols', icon: Antenna, section: 5 },
-    { label: 'Deployment', icon: Milestone, section: 6 },
-    { label: 'Vehicle/Ship', icon: Truck, section: 7 },
-    { label: 'Land-based', icon: Building2, section: 8 },
-    { label: 'Mechanical', icon: Wrench, section: 9 }
-  ]
+  const DesktopView = () => (
+    <div className="flex flex-1 overflow-hidden p-4 gap-4 bg-background">
+      {/* Left Sidebar - Chat */}
+      <div className="w-80 product-assistant-container flex flex-col">
+        <div className="product-assistant-header">
+          <div className="text-sm font-medium text-secondary-foreground">AI Support Assistant</div>
+          <div className="text-xs text-muted-foreground">Military-grade Radio Communication System</div>
+        </div>
+        <div className="product-assistant-content flex-1 p-4 overflow-y-auto space-y-4">
+          {/* Example chat messages */}
+          <div className="chat-message chat-message-assistant">
+            Welcome to VRG VoIP Radio Gateway! How can I assist you with our military-grade communication system?
+          </div>
+          <div className="chat-message chat-message-user">
+            Can you tell me about the main features?
+          </div>
+        </div>
+        <div className="p-4 border-t border-border/50 bg-card/95">
+          <div className="relative">
+            <Input 
+              placeholder="Ask me anything..." 
+              className="product-assistant-input pr-10 text-sm"
+            />
+            <Button 
+              size="icon"
+              variant="ghost" 
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
 
-  const handleSectionChange = (section: number) => {
-    setCurrentSection(section)
-  }
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col bg-card rounded-lg shadow-sm overflow-hidden">
+        {/* Slideshow Container */}
+        <div className="flex-1 bg-secondary relative">
+          <Slideshow 
+            currentSection={currentSection}
+            onSectionChange={setCurrentSection}
+          />
+        </div>
 
-  const handleAudioComplete = () => {
-    setIsPlaying(false)
-    setCurrentTime(0)
-  }
+        {/* Bottom Navigation */}
+        <nav className="flex justify-between px-2 py-2 bg-gradient-to-b from-primary/80 to-primary">
+          {navigationItems.map((item) => (
+            <Button
+              key={item.label}
+              variant="ghost"
+              onClick={() => setCurrentSection(item.section)}
+              className={`flex flex-col items-center gap-1.5 h-auto py-3 px-4 
+                bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl
+                shadow-lg hover:shadow-xl hover:scale-105 hover:bg-white/20
+                transition-all duration-300 ease-out
+                text-black min-w-[90px] transform hover:-translate-y-0.5
+                active:translate-y-0 active:shadow-md
+                ${currentSection === item.section ? 'bg-white/30' : ''}`}
+            >
+              <item.icon className="h-7 w-7 text-black drop-shadow-md" />
+              <span className="text-[14px] font-medium text-center leading-tight uppercase text-black drop-shadow-sm">
+                {item.label}
+              </span>
+            </Button>
+          ))}
+        </nav>
+      </div>
+    </div>
+  )
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-secondary text-secondary-foreground p-4">
-        <div className="flex justify-between items-center">
-          <div className="flex-1 text-center">
-            <h1 className="text-3xl font-bold tracking-wider uppercase">VRG VoIP Radio Gateway</h1>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            className="absolute right-4 flex items-center gap-2 text-xs hover:bg-secondary-foreground/20"
-          >
-            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-          </Button>
+      <header className="bg-secondary text-secondary-foreground p-4 flex justify-between items-center">
+        <div className="flex-1 flex justify-center">
+          <div className="text-3xl font-bold text-secondary-foreground tracking-wider uppercase">VRG VoIP Radio Gateway</div>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleTheme}
+          className="absolute right-4 flex items-center gap-2 text-xs text-secondary-foreground hover:bg-secondary-foreground/20"
+        >
+          {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+        </Button>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {isMobile ? <MobileView /> : (
-          <div className="flex flex-1 overflow-hidden p-4 gap-4 bg-background h-[calc(100vh-8rem)]">
-            {/* Left Sidebar - Chat */}
-            <div className="w-80 product-assistant-container flex flex-col h-full">
-              <div className="product-assistant-header">
-                <div className="text-sm font-medium text-secondary-foreground">AI Support Assistant</div>
-                <div className="text-xs text-muted-foreground">Military-grade Radio Communication System</div>
-              </div>
-              <div className="product-assistant-content flex-1 p-4 overflow-y-auto space-y-4">
-                {/* Example chat messages */}
-                <div className="chat-message chat-message-assistant">
-                  Welcome to VRG VoIP Radio Gateway! How can I assist you with our military-grade communication system?
-                </div>
-                <div className="chat-message chat-message-user">
-                  Can you tell me about the main features?
-                </div>
-              </div>
-              <div className="p-4 border-t border-border/50 bg-card/95">
-                <div className="relative">
-                  <Input 
-                    placeholder="Ask me anything..." 
-                    className="product-assistant-input pr-10 text-sm"
-                  />
-                  <Button 
-                    size="icon"
-                    variant="ghost" 
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col bg-card rounded-lg shadow-sm overflow-hidden h-full">
-              {/* Slideshow Container */}
-              <div className="relative flex-1 bg-black">
-                <div className="w-full h-full">
-                  <Slideshow 
-                    currentSection={currentSection}
-                    onSectionChange={setCurrentSection}
-                  />
-                </div>
-              </div>
-
-              {/* Navigation Buttons */}
-              <nav className="flex justify-between px-2 py-2 bg-gradient-to-b from-primary/80 to-primary">
-                {navigationItems.map((item) => (
-                  <Button
-                    key={item.label}
-                    variant="ghost"
-                    onClick={() => setCurrentSection(item.section)}
-                    className={`flex flex-col items-center gap-1.5 h-auto py-3 px-4 
-                      bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl
-                      shadow-lg hover:shadow-xl hover:scale-105 hover:bg-white/20
-                      transition-all duration-300 ease-out
-                      text-black min-w-[90px] transform hover:-translate-y-0.5
-                      active:translate-y-0 active:shadow-md
-                      ${currentSection === item.section ? 'bg-white/30' : ''}`}
-                  >
-                    <item.icon className="h-7 w-7 text-black drop-shadow-md" />
-                    <span className="text-[14px] font-medium text-center leading-tight uppercase text-black drop-shadow-sm">
-                      {item.label}
-                    </span>
-                  </Button>
-                ))}
-              </nav>
-            </div>
-          </div>
-        )}
-      </main>
+      {isMobile ? (
+        <MobileView />
+      ) : (
+        <DesktopView />
+      )}
 
       {/* Footer - Only show in desktop view */}
       {!isMobile && (
         <footer className="mt-auto">
           <div className="flex gap-2 p-2 bg-background">
-            {/* Company Info Card */}
             <Card className="p-2 w-1/5">
               <h3 className="font-semibold text-xs mb-1 text-foreground text-center">COMPANY INFO</h3>
               <div className="text-xs space-y-1 text-muted-foreground text-center">
@@ -283,10 +306,9 @@ export default function Component() {
               </div>
             </Card>
 
-            {/* Logo Card */}
             <Card className="p-2 w-1/5">
               <div className="flex justify-center items-center h-full">
-                <Image
+                <NextImage
                   src={getAssetPath("/images/teqarmada-logo.png")}
                   alt="Teq Armada Logo"
                   width={150}
@@ -296,7 +318,6 @@ export default function Component() {
               </div>
             </Card>
 
-            {/* Sales Contact Card */}
             <Card className="p-2 w-1/5">
               <h3 className="font-semibold text-xs mb-1 text-foreground text-center">SALES CONTACT</h3>
               <div className="text-xs space-y-1 text-muted-foreground text-center">
@@ -320,12 +341,10 @@ export default function Component() {
               </div>
             </Card>
 
-            {/* Business Card Scanner */}
             <Card className="p-2 w-[300px]">
               <BusinessCardScanner />
             </Card>
 
-            {/* Contact Form */}
             <Card className="p-2 flex-grow">
               <h3 className="font-semibold text-xs mb-1 text-foreground text-center">CONTACT FORM</h3>
               <form className="space-y-2">
