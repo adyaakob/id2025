@@ -12,7 +12,9 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function getAssetPath(path: string): string {
   const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : '';
-  return `${basePath}${path}`;
+  // Ensure path starts with a forward slash and remove any double slashes
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${basePath}${normalizedPath}`.replace(/\/+/g, '/');
 }
 
 /**
