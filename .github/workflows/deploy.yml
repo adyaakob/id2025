@@ -1,4 +1,4 @@
-name: Build Check
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -13,7 +13,7 @@ env:
   NEXT_PUBLIC_BASE_PATH: /id2025
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -41,4 +41,14 @@ jobs:
           curl -L https://unpkg.com/tesseract.js-core@4.0.3/tesseract-core.wasm.js -o public/tesseract/tesseract-core.wasm.js
 
       - name: Build
-        run: npm run build
+        run: |
+          npm run build
+          touch out/.nojekyll
+          cp -r public/* out/
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: out
+          clean: true
