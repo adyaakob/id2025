@@ -12,7 +12,7 @@ import { Radio, Shield, Network, Settings2, Antenna, Milestone,
 import NextImage from 'next/image'
 import Link from 'next/link'
 import Slideshow, { sections } from "@/components/Slideshow"
-import BusinessCardScanner from "@/components/BusinessCardScanner"
+import BusinessCardScanner from "@/components/BusinessCardScannerNew"
 import { getAssetPath } from '@/lib/utils'
 import { AudioControls } from '@/components/AudioControls'
 import { useTheme } from 'next-themes'
