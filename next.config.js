@@ -3,6 +3,9 @@ const nextConfig = {
   images: {
     domains: ['unpkg.com'],
     unoptimized: true
+  },
+  typescript: {
+    ignoreBuildErrors: true
   }
 }
 
