@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, Send, List, RefreshCw, Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import BusinessCardList from './BusinessCardList';
-import { createWorker } from 'tesseract.js';
+import { createWorker, Worker, ConfigResult } from 'tesseract.js';
 import { storage } from '@/lib/storage';
 import { toast } from "@/components/ui/use-toast";
+import { saveAs } from 'file-saver';
+import Papa from 'papaparse';
 
 interface BusinessCard {
   name: string;
@@ -17,6 +19,23 @@ interface BusinessCard {
   processedDate: string;
 }
 
+// Update the interface to include Worker properties
+interface TesseractWorker extends Worker {
+  loadLanguage: (lang: string) => Promise<void>;
+  initialize: (lang: string) => Promise<void>;
+  terminate: () => Promise<ConfigResult>;
+  recognize: (image: string | File | Blob) => Promise<any>;
+}
+
+export function saveToCSV(businessCards: BusinessCard[]) {
+  // Convert data to CSV format
+  const csv = Papa.unparse(businessCards);
+  
+  // Create blob and save file
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, `business_cards_${new Date().toISOString()}.csv`);
+}
+
 export default function BusinessCardScanner() {
   const [scanning, setScanning] = useState(false);
   const [scannedData, setScannedData] = useState<BusinessCard | null>(null);
@@ -26,13 +45,12 @@ export default function BusinessCardScanner() {
   const [processingSuccess, setProcessingSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const workerRef = useRef<any>(null);
+  const workerRef = useRef<TesseractWorker | null>(null);
 
-  const initializeWorker = async () => {
-    console.log('⚙️ Initializing Tesseract worker...');
+  const initializeWorker = async (): Promise<TesseractWorker> => {
     try {
       if (!workerRef.current) {
-        const worker = await createWorker();
+        const worker = await createWorker() as unknown as TesseractWorker;
         await worker.loadLanguage('eng');
         await worker.initialize('eng');
         workerRef.current = worker;
@@ -40,8 +58,8 @@ export default function BusinessCardScanner() {
       }
       return workerRef.current;
     } catch (error) {
-      console.error('Failed to initialize Tesseract worker:', error);
-      throw new Error('Failed to initialize scanner');
+      console.error('❌ Error initializing Tesseract worker:', error);
+      throw error;
     }
   };
 
@@ -153,7 +171,7 @@ export default function BusinessCardScanner() {
       setProcessing(true);
       setProcessingError(null);
       
-      // Ensure worker is initialized
+      // Get the initialized worker
       const worker = await initializeWorker();
       console.log('Processing image...');
       

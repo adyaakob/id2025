@@ -11,9 +11,7 @@ export function cn(...inputs: ClassValue[]) {
  * @returns The correct path that works in both development and Vercel
  */
 export function getAssetPath(path: string): string {
-  // Remove leading slash if present
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  return `/${cleanPath}`;
+  return path;
 }
 
 /**

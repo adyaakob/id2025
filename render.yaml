@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: id2025
+    env: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OPENAI_API_KEY
+        sync: false
+    autoDeploy: true
