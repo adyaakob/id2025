@@ -10,7 +10,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true
   },
-  swcMinify: true
+  swcMinify: true,
+  experimental: {
+    serverActions: true
+  }
 }
 
 module.exports = nextConfig
