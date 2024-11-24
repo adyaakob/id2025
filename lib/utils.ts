@@ -11,7 +11,8 @@ export function cn(...inputs: ClassValue[]) {
  * @returns The correct path that works in both development and Vercel
  */
 export function getAssetPath(path: string): string {
-  return path;
+  const basePath = process.env.NODE_ENV === 'production' ? '/id2025' : '';
+  return `${basePath}${path}`;
 }
 
 /**
