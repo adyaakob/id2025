@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
@@ -226,7 +226,7 @@ function formatResponse(results: any[]): string {
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
         const query = request.nextUrl.searchParams.get('query');
         if (!query) {
