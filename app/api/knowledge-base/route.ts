@@ -226,9 +226,7 @@ function formatResponse(results: any[]): string {
 
 export async function GET(request: Request) {
     try {
-        const url = new URL(request.url);
-        const query = url.searchParams.get('query');
-
+        const query = request.nextUrl.searchParams.get('query');
         if (!query) {
             return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
         }

@@ -1,111 +1,89 @@
 import { BusinessCard } from '@/types/business-card';
 
-const STORAGE_KEY = 'business_cards_v2';
-
 class StorageManager {
-  private isLocalStorageAvailable(): boolean {
-    try {
-      const testKey = '__test__';
-      localStorage.setItem(testKey, testKey);
-      localStorage.removeItem(testKey);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  private getLocalCards(): BusinessCard[] {
-    if (!this.isLocalStorageAvailable()) {
-      console.warn('LocalStorage is not available');
-      return [];
-    }
-
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error reading from localStorage:', error);
-      return [];
-    }
-  }
-
-  async saveCard(card: BusinessCard): Promise<BusinessCard> {
-    if (!this.isLocalStorageAvailable()) {
-      console.warn('LocalStorage is not available, card will not be persisted');
-      return card;
-    }
-
-    try {
-      const existingCards = this.getLocalCards();
-      
-      // If card has no ID, generate one
-      const cardToSave = {
-        ...card,
-        id: card.id || crypto.randomUUID(),
-        processedDate: card.processedDate || new Date().toISOString()
-      };
-      
-      // Add new card
-      existingCards.push(cardToSave);
-      
-      // Save back to localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(existingCards));
-      
-      return cardToSave;
-    } catch (error) {
-      console.error('Failed to save card:', error);
-      throw new Error('Failed to save business card');
-    }
-  }
-
-  async updateCard(updatedCard: BusinessCard): Promise<BusinessCard> {
-    if (!this.isLocalStorageAvailable()) {
-      console.warn('LocalStorage is not available');
-      throw new Error('LocalStorage is not available');
-    }
-
-    try {
-      const existingCards = this.getLocalCards();
-      const index = existingCards.findIndex(card => card.id === updatedCard.id);
-      
-      if (index === -1) {
-        throw new Error('Card not found');
-      }
-
-      // Update the card while preserving id and processedDate
-      existingCards[index] = {
-        ...updatedCard,
-        id: existingCards[index].id,
-        processedDate: existingCards[index].processedDate
-      };
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(existingCards));
-      return existingCards[index];
-    } catch (error) {
-      console.error('Failed to update card:', error);
-      throw new Error('Failed to update business card');
-    }
-  }
-
-  async deleteCard(cardId: string): Promise<void> {
-    if (!this.isLocalStorageAvailable()) {
-      console.warn('LocalStorage is not available');
-      return;
-    }
-
-    try {
-      const existingCards = this.getLocalCards();
-      const updatedCards = existingCards.filter(card => card.id !== cardId);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCards));
-    } catch (error) {
-      console.error('Failed to delete card:', error);
-      throw new Error('Failed to delete business card');
-    }
-  }
-
   async getCards(): Promise<BusinessCard[]> {
-    return this.getLocalCards();
+    try {
+      console.log('StorageManager: Fetching cards from API...');
+      const response = await fetch('/api/business-cards');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch cards');
+      }
+      const data = await response.json();
+      console.log('StorageManager: Fetched cards:', data.cards);
+      return data.cards;
+    } catch (error) {
+      console.error('StorageManager: Error fetching cards:', error);
+      throw error;
+    }
+  }
+
+  async saveCard(card: Omit<BusinessCard, 'id' | 'processedDate'>): Promise<BusinessCard> {
+    try {
+      console.log('StorageManager: Saving card:', card);
+      const response = await fetch('/api/business-cards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(card),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save card');
+      }
+      const data = await response.json();
+      console.log('StorageManager: Saved card:', data.card);
+      return data.card;
+    } catch (error) {
+      console.error('StorageManager: Error saving card:', error);
+      throw error;
+    }
+  }
+
+  async updateCard(card: BusinessCard): Promise<BusinessCard> {
+    try {
+      console.log('StorageManager: Updating card:', card);
+      const response = await fetch('/api/business-cards', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(card),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update card');
+      }
+      const data = await response.json();
+      console.log('StorageManager: Updated card:', data.card);
+      return data.card;
+    } catch (error) {
+      console.error('StorageManager: Error updating card:', error);
+      throw error;
+    }
+  }
+
+  async deleteCard(id: string): Promise<void> {
+    try {
+      console.log('StorageManager: Deleting card:', id);
+      const response = await fetch('/api/business-cards', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete card');
+      }
+      console.log('StorageManager: Deleted card:', id);
+    } catch (error) {
+      console.error('StorageManager: Error deleting card:', error);
+      throw error;
+    }
   }
 }
 
-export { gistStorage as storage } from './gist-storage';
+export const storage = new StorageManager();

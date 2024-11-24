@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import BusinessCardList from './BusinessCardList';
 import { createWorker } from 'tesseract.js';
 import { storage } from '@/lib/storage';
+import { toast } from "@/components/ui/use-toast";
 
 interface BusinessCard {
   name: string;
@@ -31,19 +32,27 @@ export default function BusinessCardScanner() {
     console.log('⚙️ Initializing Tesseract worker...');
     try {
       if (!workerRef.current) {
-        workerRef.current = await createWorker();
-        await workerRef.current.loadLanguage('eng');
-        await workerRef.current.initialize('eng');
+        const worker = await createWorker();
+        await worker.loadLanguage('eng');
+        await worker.initialize('eng');
+        workerRef.current = worker;
         console.log('✅ Tesseract worker initialized successfully');
       }
+      return workerRef.current;
     } catch (error) {
       console.error('Failed to initialize Tesseract worker:', error);
-      setProcessingError('Error initializing scanner. Please try again.');
+      throw new Error('Failed to initialize scanner');
     }
   };
 
   useEffect(() => {
-    initializeWorker();
+    // Initialize worker when component mounts
+    initializeWorker().catch(error => {
+      console.error('Error initializing worker:', error);
+      setProcessingError('Error initializing scanner. Please try again.');
+    });
+
+    // Cleanup worker when component unmounts
     return () => {
       if (workerRef.current) {
         workerRef.current.terminate();
@@ -130,6 +139,12 @@ export default function BusinessCardScanner() {
       console.error('Error capturing image:', error);
       setProcessingError('Failed to capture image. Please try again.');
       setProcessing(false);
+      
+      toast({
+        title: "Error",
+        description: "Failed to capture image. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -138,9 +153,11 @@ export default function BusinessCardScanner() {
       setProcessing(true);
       setProcessingError(null);
       
+      // Ensure worker is initialized
       const worker = await initializeWorker();
       console.log('Processing image...');
       
+      // Recognize text from image
       const result = await worker.recognize(imageData);
       console.log('OCR Result:', result);
       
@@ -148,16 +165,27 @@ export default function BusinessCardScanner() {
         throw new Error('No text detected in image');
       }
 
-      // Extract business card information from the OCR text
+      // Extract business card information
       const extractedData = extractBusinessCardInfo(result.data.text);
       console.log('Extracted Data:', extractedData);
       
       setScannedData(extractedData);
       setProcessing(false);
+      
+      toast({
+        title: "Success",
+        description: "Business card text extracted successfully!",
+      });
     } catch (error) {
       console.error('Error processing image:', error);
       setProcessingError('Failed to process image. Please try again.');
       setProcessing(false);
+      
+      toast({
+        title: "Error",
+        description: "Failed to process image. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -223,28 +251,44 @@ export default function BusinessCardScanner() {
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files) return;
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     try {
       setProcessing(true);
       setProcessingError(null);
 
-      // Get the first file
-      const file = event.target.files[0];
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please upload an image file');
+      }
 
-      // Read the file as a data URL
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File size too large. Please upload an image smaller than 5MB');
+      }
+
+      // Read the file
       const reader = new FileReader();
-      reader.onload = async (event) => {
-        if (!event.target?.result) return;
-
-        // Process the image
-        await processImage(event.target.result as string);
+      reader.onload = async (e) => {
+        if (typeof e.target?.result === 'string') {
+          await processImage(e.target.result);
+        }
+      };
+      reader.onerror = () => {
+        throw new Error('Failed to read file');
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading file:', error);
-      setProcessingError('Failed to upload file. Please try again.');
+      setProcessingError(error instanceof Error ? error.message : 'Failed to upload file');
       setProcessing(false);
+      
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to upload file',
+        variant: "destructive",
+      });
     }
   };
 
@@ -267,6 +311,12 @@ export default function BusinessCardScanner() {
       console.error('Error processing card:', error);
       setProcessingError('Failed to process card. Please try again.');
       setProcessing(false);
+      
+      toast({
+        title: "Error",
+        description: "Failed to process card. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -347,9 +397,6 @@ export default function BusinessCardScanner() {
         </div>
       )}
 
-      {/* Processing error */}
-      {/* Removed error handling for processing error */}
-
       {/* Show scanned data */}
       {scannedData && !processing && !processingError && (
         <div className="flex flex-col gap-2">
@@ -381,9 +428,6 @@ export default function BusinessCardScanner() {
           </div>
         </div>
       )}
-
-      {/* Processing indicator */}
-      {/* Removed processing indicator */}
 
       {/* Success message */}
       {processingSuccess && (
